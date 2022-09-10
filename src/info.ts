@@ -1,5 +1,5 @@
 import { InfoResponse } from './types';
-export function info(): InfoResponse {
+export default function info(): InfoResponse {
     return {
         apiversion: "1",
         author: "",       // TODO: Your Battlesnake Username

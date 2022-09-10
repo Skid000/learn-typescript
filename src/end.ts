@@ -1,4 +1,4 @@
 import { GameState } from './types';
-export function end(gameState: GameState): void {
+export default function end(gameState: GameState): void {
     console.log("GAME OVER\n");
 }
