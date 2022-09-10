@@ -1,30 +1,8 @@
 import runServer from './src/server';
-import { GameState, InfoResponse, MoveResponse } from './src/types';
-
-// info is called when you create your Battlesnake on play.battlesnake.com
-// and controls your Battlesnake's appearance
-// TIP: If you open your Battlesnake URL in a browser you should see this data
-function info(): InfoResponse {
-  console.log("INFO");
-
-  return {
-    apiversion: "1",
-    author: "",       // TODO: Your Battlesnake Username
-    color: "#888888", // TODO: Choose color
-    head: "default",  // TODO: Choose head
-    tail: "default",  // TODO: Choose tail
-  };
-}
-
-// start is called when your Battlesnake begins a game
-function start(gameState: GameState): void {
-  console.log("GAME START");
-}
-
-// end is called when your Battlesnake finishes a game
-function end(gameState: GameState): void {
-  console.log("GAME OVER\n");
-}
+import { GameState, MoveResponse } from './src/types';
+import { info } from './src/info'
+import { start } from './src/start';
+import { end } from './src/end';
 
 // move is called on every turn and returns your next move
 // Valid moves are "up", "down", "left", or "right"
