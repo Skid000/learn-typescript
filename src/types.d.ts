@@ -1,6 +1,8 @@
 // API Types
 // https://docs.battlesnake.com/api
 
+import { GridNode } from "./pathfinding/GridNode";
+
 export interface Coord {
     x: number;
     y: number;
@@ -77,5 +79,12 @@ export interface Coord {
   }
   export interface GraphOption{
     diagonal?: boolean;
+  }
+  export interface SearchOption{
+    heuristic?: Function;
+    closest?: boolean;
+  }
+  export interface ScoreFunction {
+    (node:GridNode): number;
   }
   
