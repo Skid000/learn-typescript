@@ -75,4 +75,7 @@ export interface Coord {
     move: string;
     shout?: string;
   }
+  export interface GraphOption{
+    diagonal?: boolean;
+  }
   
