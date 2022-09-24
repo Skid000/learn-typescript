@@ -1,4 +1,4 @@
-import { GridNode } from './gridNode';
+import { GridNode } from './GridNode';
 export class Astar {
     static cleanNode(node: GridNode): void {
         node.f = 0;

@@ -1,6 +1,6 @@
 import { GraphOption } from '../types';
-import { GridNode } from './gridNode';
-import { Astar } from './astar';
+import { GridNode } from './GridNode';
+import { Astar } from './Astar';
 export class Graph {
     public nodes: GridNode[];
     public diagonal: boolean;
