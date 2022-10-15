@@ -1,4 +1,5 @@
 import { GameState } from './types';
 export default function start(gameState: GameState): void {
-    console.log("Game started");
-  }
+  console.clear();
+  console.log("Game started!");
+}
