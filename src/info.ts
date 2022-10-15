@@ -2,8 +2,8 @@ import { InfoResponse } from './types';
 export default function info(): InfoResponse {
     return {
         apiversion: "1",
-        author: "",       // TODO: Your Battlesnake Username
-        color: "#888888", // TODO: Choose color
+        author: "Invalid Username.",       // TODO: Your Battlesnake Username
+        color: "#ffffff", // TODO: Choose color
         head: "default",  // TODO: Choose head
         tail: "default",  // TODO: Choose tail
     };
