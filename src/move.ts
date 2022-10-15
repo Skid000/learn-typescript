@@ -5,6 +5,6 @@ export default function move(gameState: GameState): MoveResponse {
         origSelf = gameState.you,
         turn = gameState.turn;
     let populatedBoard = populate(origBoard, origSelf);
-    console.log(JSON.stringify(populatedBoard));
+    
     return { move: "down" };
 }

@@ -1,11 +1,12 @@
 import { Battlesnake, Board } from "../types"
+import { Vector } from "../util/vector";
 export function populate(board: Board, self: Battlesnake): number[][] {
     // head branching directions
     const DIRS = [
-        { x: -1, y: 0 },
-        { x: 0, y: -1 },
-        { x: 1, y: 0 },
-        { x: 0, y: 1 }
+        new Vector(-1, 0),
+        new Vector(0, -1),
+        new Vector(1, 0),
+        new Vector(0, 1)
     ];
     // create empty board with all passable squares
     let gameState = new Array(board.width).fill([]);
@@ -26,15 +27,15 @@ export function populate(board: Board, self: Battlesnake): number[][] {
         // TODO: have minimax come into consideration?
         // TODO: board wrapping come into consideration?
         // add head branching to board
-        for(let dir of DIRS){
-                const newHead = {
-                    x: snake.head.x + dir.x,
-                    y: snake.head.y + dir.y
-                }
-                if (gameState[newHead.x] == undefined) continue;
-                if (gameState[newHead.x][newHead.y] == undefined) continue;
-                gameState[newHead.x][newHead.y] = 0;
+        for (let dir of DIRS) {
+            const newHead = {
+                x: snake.head.x + dir.x,
+                y: snake.head.y + dir.y
             }
+            if (gameState[newHead.x] == undefined) continue;
+            if (gameState[newHead.x][newHead.y] == undefined) continue;
+            gameState[newHead.x][newHead.y] = 0;
+        }
     }
     return gameState;
 }
