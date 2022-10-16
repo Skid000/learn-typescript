@@ -1,4 +1,4 @@
 import { GameState } from './types';
 export default function end(gameState: GameState): void {
-    console.log("Game Ended!");
+    console.log(`Game ended at ${gameState.turn}!`);
 }

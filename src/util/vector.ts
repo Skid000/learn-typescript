@@ -6,6 +6,12 @@ export class Vector {
         this.y = y;
     }
     distanceTo(vector: Vector): number {
-        return Math.sqrt(Math.pow(this.x - vector.x, 2) + Math.pow(this.y - vector.y, 2));
+        return Math.sqrt((this.x - vector.x) ** 2 + (this.y - vector.y) ** 2);
+    }
+    add(vector: Vector): Vector {
+        return new Vector(this.x + vector.x, this.y + vector.y);
+    }
+    equals(vector: Vector): boolean {
+        return (this.x === vector.x) && (this.y === vector.y);
     }
 }
