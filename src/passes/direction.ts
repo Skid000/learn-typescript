@@ -1,7 +1,7 @@
 import { Astar } from "../pathfinding/Astar";
 import { Graph } from "../pathfinding/Graph";
 import { Battlesnake, MoveResponse } from "../types";
-import { directionToNextGridNode } from "../util/directionUtil";
+import { directionToNextGridNode } from "../util/Util";
 import { Vector } from "../util/vector";
 
 export function direction(populatedBoard: number[][], destinations: Vector[], self: Battlesnake): MoveResponse{
