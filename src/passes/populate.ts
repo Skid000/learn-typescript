@@ -11,14 +11,24 @@ export function populate(board: Board, self: Battlesnake): number[][] {
     // create empty board with all passable squares
     let gameState = new Array(board.width).fill([]);
     for (let col in gameState) gameState[col] = new Array(board.height).fill(1);
+    // pad edges with lower passability
+    for(var x = 0; x < gameState.length; x++){
+        for(var y = 0; y < gameState[x].length; y++){
+            if(!x || x == gameState.length - 1){
+                gameState[x][y] = 3;
+            }else if(!y || y == gameState[x].length -1){
+                gameState[x][y] = 3;
+            }
+        }
+    }
     // populate board with all hazards
     for (let hazards of board.hazards) gameState[hazards.x][hazards.y] = 0;
     // populate board with snake parts
     for (let snake of board.snakes) {
         // populate board with snake bodies regardless of snake
         for (let part of snake.body) gameState[part.x][part.y] = 0;
-        // remove snake tails from board
-        gameState[snake.body[snake.body.length - 1].x][snake.body[snake.body.length - 1].y] = 1;
+        // remove snake tails from board TODO: figure out how this impacts gameplay
+        // gameState[snake.body[snake.body.length - 1].x][snake.body[snake.body.length - 1].y] = 1;
         // remove snake heads of smaller snakes and self
         if (snake.id == self.id || snake.length < self.length) {
             gameState[snake.head.x][snake.head.y] = 1;

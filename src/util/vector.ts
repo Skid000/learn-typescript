@@ -1,3 +1,5 @@
+import { Coord } from "../types";
+
 export class Vector {
     public x: number;
     public y: number;
@@ -13,5 +15,11 @@ export class Vector {
     }
     equals(vector: Vector): boolean {
         return (this.x === vector.x) && (this.y === vector.y);
+    }
+    static from(val: Coord){
+        return new Vector(val.x, val.y);
+    }
+    toString(): string {
+        return "(" + this.x + ", " + this.y + ")";
     }
 }

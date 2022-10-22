@@ -1,3 +1,4 @@
+import { TemplateHead } from "typescript";
 import { GridNode } from "../pathfinding/GridNode";
 import { Battlesnake, Board, MoveResponse } from "../types";
 import { Vector } from "./vector";
@@ -35,4 +36,28 @@ export function validMoves(populatedBoard: number[][], board: Board, id: string)
 export function findSnake(board: Board, id: string): Battlesnake {
     // @ts-ignore
     return board.snakes.find(snake => snake.id === id);
+}
+export function deepCopyArray(array: number[][]): number[][] {
+    return array.map(a => a.slice())
+}
+export function deepCloneObject(obj: any): any {
+    return JSON.parse(JSON.stringify(obj));
+}
+export function deepEquals(a: number[][], b: number[][]): boolean {
+    if (a.length !== b.length || a[0].length !== b[0].length) return false;
+    for (let i = 0; i < a.length; i++) {
+        for (let t = 0; t < a[i].length; t++) {
+            if (a[i][t] !== b[i][t]) return false;
+        }
+    }
+    return true;
+}
+export function removeElemFromArray<Type>(array: Type[], element: Type): void {
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] === element) {
+            array.splice(i, 1);
+            return;
+        }
+    }
+    return;
 }

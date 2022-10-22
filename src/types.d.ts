@@ -2,6 +2,7 @@
 // https://docs.battlesnake.com/api
 
 import { GridNode } from "./pathfinding/GridNode";
+import { Vector } from "./util/vector";
 
 export interface Coord {
     x: number;
@@ -19,7 +20,11 @@ export interface Coord {
     shout: string;
     customizations: Customizations;
   }
-  
+  export interface moveDecision {
+    moveResponse?: MoveResponse;
+    valid: boolean;
+    target?: Vector;
+  }
   export interface Customizations {
     color: string;
     head: string;
