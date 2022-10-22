@@ -12,10 +12,8 @@ export default function move(gameState: GameState): MoveResponse {
     const origBoard = gameState.board,
         origSelf = gameState.you,
         turn = gameState.turn,
-        MM = new MiniMax(origBoard.width,origBoard.height,3),
+        max = new MiniMax(origBoard.width,origBoard.height,3),
         state = new State(origBoard,origSelf);
-        MM.populateBoard(origBoard);
-        MM.printBoard();
     let populatedBoard = populate(origBoard, origSelf), destinations = food(origBoard, populatedBoard, origSelf), move;
     astar: {
         if (destinations.length > 0) {
@@ -32,6 +30,13 @@ export default function move(gameState: GameState): MoveResponse {
             }
         }
     }
+    console.log(max.bestMove(state,0, true,{
+        score: Number.MIN_SAFE_INTEGER,
+        move: new Vector(0,0)
+    },{
+        score: Number.MAX_SAFE_INTEGER,
+        move: new Vector(0,0)
+    }))
     // @ts-ignore
     if(move.valid) return move.moveResponse;
 

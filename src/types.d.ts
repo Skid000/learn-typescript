@@ -20,6 +20,10 @@ export interface Coord {
     shout: string;
     customizations: Customizations;
   }
+  export interface MiniMaxMove {
+    move: Vector;
+    score: number;
+  }
   export interface moveDecision {
     moveResponse?: MoveResponse;
     valid: boolean;
