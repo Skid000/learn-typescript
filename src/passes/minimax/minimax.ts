@@ -24,7 +24,7 @@ export class MiniMax {
         this.MAX_DEPTH = MAX_DEPTH;
     }
     bestMove(state: State, depth: number, maxPlayer: boolean, alpha: MiniMaxMove, beta: MiniMaxMove): MiniMaxMove {
-        console.log(`isMaxPlayer: ${maxPlayer}\nDepth: ${depth}`);
+        //console.log(`isMaxPlayer: ${maxPlayer}\nDepth: ${depth}`);
         const player = state.player,
             isPlayerTailSafe = player.length > 3,
             isEnemyTailSafe = isPlayerTailSafe,
@@ -33,7 +33,7 @@ export class MiniMax {
             enemyMoves = this.neighbours(Vector.from(enemy.head), state.grid, isEnemyTailSafe),
             moves: Vector[] = maxPlayer ? playerMoves : enemyMoves;
         if (depth == this.MAX_DEPTH || !moves.length || !player.health || !enemy.health || player.head == enemy.head) {
-            console.log("Returning up tree");
+            //console.log("Returning up tree");
             let score = this.score(state, playerMoves, enemyMoves);
             return { score: score, move: new Vector(0, 0) }
         }
@@ -55,21 +55,22 @@ export class MiniMax {
                     newGrid[newState.player.body[length].x][newState.player.body[length].y] = MiniMax.types.empty;
                     newState.player.body.pop();
                 }
-                if (!length) newGrid[newState.player.head.x][newState.player.head.y] = MiniMax.types.body;
+                if (length) newGrid[newState.player.head.x][newState.player.head.y] = MiniMax.types.body;
                 newGrid[move.x][move.y] = MiniMax.types.head;
                 newState.player.head = move;
                 newState.player.body.unshift(move);
                 let newAlpha = this.bestMove(newState, depth + 1, false, alpha, beta);
-                console.log("Current alpha value: ", alpha.score);
-                console.log("Current alpha move: ", alpha.move);
-                console.log("Current newAlpha value: ", newAlpha.score);
-                console.log("Current newAlpha move: ", move);
+                //console.log("Current alpha value: ", alpha.score);
+                //console.log("Current alpha move: ", alpha.move);
+                //console.log("Current newAlpha value: ", newAlpha.score);
+                //console.log("Current newAlpha move: ", move);
+                //this.printBoard(newState);
+                // console.log(newAlpha,depth);
                 if (newAlpha.score > alpha.score) {
                     console.log("Setting alpha value: ", newAlpha.score);
                     console.log("Setting alpha move: ", move);
-                    alpha = { score: newAlpha.score, move: move };
+                    alpha.score = newAlpha.score, alpha.move = move;
                 }
-
                 if (beta.score <= alpha.score) {
                     break;
                 }
@@ -93,15 +94,13 @@ export class MiniMax {
                     newGrid[newState.enemies[0].body[length].x][newState.enemies[0].body[length].y] = MiniMax.types.empty;
                     newState.enemies[0].body.pop();
                 }
-                if (!length) newGrid[newState.enemies[0].head.x][newState.enemies[0].head.y] = MiniMax.types.body;
+                if (length) newGrid[newState.enemies[0].head.x][newState.enemies[0].head.y] = MiniMax.types.body;
                 newGrid[move.x][move.y] = MiniMax.types.head;
                 newState.enemies[0].head = move;
                 newState.enemies[0].body.unshift(move);
-
                 let newBeta = this.bestMove(newState, depth + 1, true, alpha, beta);
-
                 if (newBeta.score < beta.score) {
-                    beta = { score: newBeta.score, move: move };
+                    beta.score = newBeta.score, beta.move = move;
                 }
 
                 if (beta.score <= alpha.score) {
@@ -117,19 +116,19 @@ export class MiniMax {
     }
     private score(state: State, playerMoves: Vector[], enemyMoves: Vector[]): number {
         let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0;
-        if (!playerMoves.length) return -Infinity;
-        if (!state.player.health) return -Infinity;
+        if (!playerMoves.length) return Number.MIN_SAFE_INTEGER;
+        if (!state.player.health) return Number.MIN_SAFE_INTEGER;
         if (state.player.head.x == state.enemies[0].head.x && state.player.head.y == state.enemies[0].head.y) {
-            if (state.player.length > state.enemies[0].length) return Infinity;
-            else return -Infinity;
+            if (state.player.length > state.enemies[0].length) return Number.MAX_SAFE_INTEGER;
+            else return Number.MIN_SAFE_INTEGER;
         }
         const playerSquares = this.floodFill(new Vector(state.player.head.x, state.player.head.y), newBoard, 0, true),
             playerSquaresPercentage = playerSquares / (this.height * this.width),
             enemySquares = this.floodFill(new Vector(state.enemies[0].head.x, state.enemies[0].head.y), enemyBoard, 0, true),
             enemySquaresPercentage = enemySquares / (this.height * this.width);
         if (playerSquares <= state.player.length) return Number.MIN_SAFE_INTEGER * (1 / playerSquaresPercentage);
-        if (enemySquares <= state.enemies[0].length) score += Number.MAX_SAFE_INTEGER;
-        if (!enemyMoves.length) score += Infinity;
+        if (enemySquares <= state.enemies[0].length) score = Number.MAX_SAFE_INTEGER;
+        if (!enemyMoves.length) score = Number.MAX_SAFE_INTEGER;
         if (state.board.food.length <= 8) {
             foodWeight = 200 - (2 * state.player.health);
         } else if (state.player.health <= 40 || state.player.body.length < 4) {

@@ -22,6 +22,16 @@ export function directionToNextGridNode(path: GridNode[], self: Battlesnake): Mo
         move: fDir,
     }
 }
+export function directionToAdjVector(a: Vector, b: Vector): string {
+    let fDir = 'none';
+    for (let dir in dir2Vector) {
+        if (a.add(dir2Vector[dir]).equals(b)) {
+            fDir = dir;
+            break;
+        }
+    }
+    return fDir;
+}
 export function validMoves(populatedBoard: number[][], board: Board, id: string): Vector[] {
     let snake = findSnake(board, id), moves: Vector[] = [], head = new Vector(snake.head.x, snake.head.y);
     for (let dir in dir2Vector) {
