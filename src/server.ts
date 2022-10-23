@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express"
-
+import { Shared } from "./persistence/shared";
+const persistent = new Map<string, Shared>();
 export interface BattlesnakeHandlers {
   info: Function;
   start: Function;
@@ -16,20 +17,20 @@ export default function runServer(handlers: BattlesnakeHandlers) {
   });
 
   app.post("/start", (req: Request, res: Response) => {
-    handlers.start(req.body);
+    handlers.start(req.body,persistent);
     res.send("ok");
   });
 
   app.post("/move", (req: Request, res: Response) => {
-    res.send(handlers.move(req.body));
+    res.send(handlers.move(req.body,persistent.get(req.body.game.id)));
   });
 
   app.post("/end", (req: Request, res: Response) => {
-    handlers.end(req.body);
+    handlers.end(req.body,persistent);
     res.send("ok");
   });
 
-  app.use(function(req: Request, res: Response, next: NextFunction) {
+  app.use(function (req: Request, res: Response, next: NextFunction) {
     res.set("Server", "battlesnake/github/starter-snake-typescript");
     next();
   });

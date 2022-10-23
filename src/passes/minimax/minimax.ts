@@ -26,13 +26,13 @@ export class MiniMax {
         this.moves = [];
         for (let i = 0; i < MAX_DEPTH; i++) this.moves.push([]);
     }
-    bestMove(state: State, depth: number, maxPlayer: boolean, alpha: MiniMaxMove, beta: MiniMaxMove): MiniMaxMove {
+    bestMove(state: State, depth: number, maxPlayer: boolean, alpha: MiniMaxMove, beta: MiniMaxMove, didEat: boolean = false): MiniMaxMove {
         //console.log(`Depth: ${depth}\nMaxingPlayer:${maxPlayer}`);
         alpha = deepCloneObject(alpha);
         beta = deepCloneObject(beta);
         const player = state.player,
-            isPlayerTailSafe = player.length > 3,
-            isEnemyTailSafe = isPlayerTailSafe,
+            isPlayerTailSafe = didEat ? false : player.length > 3,
+            isEnemyTailSafe = player.length > 3,
             playerMoves = this.neighbours(Vector.from(player.head), state.grid, isPlayerTailSafe),
             enemy = this.selectEnemy(state),
             enemyMoves = this.neighbours(Vector.from(enemy.head), state.grid, isEnemyTailSafe),
@@ -143,8 +143,10 @@ export class MiniMax {
         else if (avaliableSquares <= state.player.length) return -(10 ** 8) * (1 / percentAvaliable);
         if (enemySquares <= state.enemies[0].length) score += 10 ** 8;
         if (state.board.food.length <= 8) {
-            foodWeight = 200 - (2 * state.player.health);
-        } else if (state.player.health <= 40 || state.player.body.length < 4) {
+            foodWeight = 200 - (2 * state.player.health)
+        } else if (state.board.food.length <= 11) {
+            foodWeight = 300 - (3 * state.player.health);
+        } else if (state.player.health <= 50 || state.player.body.length < 4) {
             foodWeight = 100 - state.player.health;
         }
         if (foodWeight) {
@@ -152,7 +154,7 @@ export class MiniMax {
                 score -= (Vector.from(state.player.head).distanceTo(Vector.from(state.board.food[i])))
             }
         }
-        if (score) {
+        if (score > 0) {
             score *= percentAvaliable;
         } else score *= 1 / percentAvaliable;
         return score;

@@ -22,4 +22,7 @@ export class Vector {
     toString(): string {
         return "(" + this.x + ", " + this.y + ")";
     }
+    clone(): Vector {
+        return new Vector(this.x,this.y);
+    }
 }
