@@ -1,5 +1,5 @@
 import { Battlesnake, Board, MiniMaxMove } from "../../types";
-import { deepCloneObject, deepCopyArray } from "../../util/Util";
+import { deepCloneObject, deepCopyArray, deepObjEquals, directionToAdjVector, wrapVector } from "../../util/Util";
 import { Vector } from "../../util/vector";
 import { State } from "./state";
 
@@ -8,6 +8,7 @@ export class MiniMax {
     private height: number;
     private canWrap: boolean;
     private MAX_DEPTH: number;
+    public moves: MiniMaxMove[][];
     public static types: { [key: string]: number; } = {
         hazard: 0,
         food: 1,
@@ -22,9 +23,13 @@ export class MiniMax {
         this.height = height;
         this.canWrap = canWrap;
         this.MAX_DEPTH = MAX_DEPTH;
+        this.moves = [];
+        for (let i = 0; i < MAX_DEPTH; i++) this.moves.push([]);
     }
     bestMove(state: State, depth: number, maxPlayer: boolean, alpha: MiniMaxMove, beta: MiniMaxMove): MiniMaxMove {
-        //console.log(`isMaxPlayer: ${maxPlayer}\nDepth: ${depth}`);
+        //console.log(`Depth: ${depth}\nMaxingPlayer:${maxPlayer}`);
+        alpha = deepCloneObject(alpha);
+        beta = deepCloneObject(beta);
         const player = state.player,
             isPlayerTailSafe = player.length > 3,
             isEnemyTailSafe = isPlayerTailSafe,
@@ -32,13 +37,16 @@ export class MiniMax {
             enemy = this.selectEnemy(state),
             enemyMoves = this.neighbours(Vector.from(enemy.head), state.grid, isEnemyTailSafe),
             moves: Vector[] = maxPlayer ? playerMoves : enemyMoves;
-        if (depth == this.MAX_DEPTH || !moves.length || !player.health || !enemy.health || player.head == enemy.head) {
+        if (depth == this.MAX_DEPTH || !moves.length || !player.health || !enemy.health || deepObjEquals(player.head, enemy.head)) {
             //console.log("Returning up tree");
+            //this.printBoard(state);
             let score = this.score(state, playerMoves, enemyMoves);
+            //console.log(score);
             return { score: score, move: new Vector(0, 0) }
         }
         if (maxPlayer) {
             for (let move of moves) {
+                //console.log('Cur move: ' + directionToAdjVector(Vector.from(player.head), move));
                 let newState: State = deepCloneObject(state),
                     newGrid = newState.grid,
                     eating = !1,
@@ -66,9 +74,13 @@ export class MiniMax {
                 //console.log("Current newAlpha move: ", move);
                 //this.printBoard(newState);
                 // console.log(newAlpha,depth);
+                this.moves[depth].push({
+                    score: newAlpha.score,
+                    move: move
+                });
                 if (newAlpha.score > alpha.score) {
-                    console.log("Setting alpha value: ", newAlpha.score);
-                    console.log("Setting alpha move: ", move);
+                    //console.log("Setting alpha value: ", newAlpha.score);
+                    //console.log("Setting alpha move: ", move);
                     alpha.score = newAlpha.score, alpha.move = move;
                 }
                 if (beta.score <= alpha.score) {
@@ -78,6 +90,7 @@ export class MiniMax {
             return alpha;
         } else {
             for (let move of moves) {
+                //console.log('Cur move: ' + directionToAdjVector(Vector.from(enemy.head), move))
                 let newState: State = deepCloneObject(state),
                     newGrid = newState.grid,
                     eating = false,
@@ -116,19 +129,19 @@ export class MiniMax {
     }
     private score(state: State, playerMoves: Vector[], enemyMoves: Vector[]): number {
         let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0;
-        if (!playerMoves.length) return Number.MIN_SAFE_INTEGER;
-        if (!state.player.health) return Number.MIN_SAFE_INTEGER;
-        if (state.player.head.x == state.enemies[0].head.x && state.player.head.y == state.enemies[0].head.y) {
-            if (state.player.length > state.enemies[0].length) return Number.MAX_SAFE_INTEGER;
-            else return Number.MIN_SAFE_INTEGER;
+        if (!playerMoves.length || !state.player.health) return Number.MIN_SAFE_INTEGER;
+        if (!enemyMoves.length || !state.enemies[0].health) return Number.MAX_SAFE_INTEGER;
+        if (deepObjEquals(state.player.head, state.enemies[0].head)) {
+            return state.player.length > state.enemies[0].length ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
         }
-        const playerSquares = this.floodFill(new Vector(state.player.head.x, state.player.head.y), newBoard, 0, true),
-            playerSquaresPercentage = playerSquares / (this.height * this.width),
-            enemySquares = this.floodFill(new Vector(state.enemies[0].head.x, state.enemies[0].head.y), enemyBoard, 0, true),
-            enemySquaresPercentage = enemySquares / (this.height * this.width);
-        if (playerSquares <= state.player.length) return Number.MIN_SAFE_INTEGER * (1 / playerSquaresPercentage);
-        if (enemySquares <= state.enemies[0].length) score = Number.MAX_SAFE_INTEGER;
-        if (!enemyMoves.length) score = Number.MAX_SAFE_INTEGER;
+        let avaliableSquares = this.floodFill(Vector.from(state.player.head), newBoard, 0, true),
+            percentAvaliable = avaliableSquares / (this.width * this.height),
+            enemySquares = this.floodFill(Vector.from(state.enemies[0].head), enemyBoard, 0, true);
+        //console.log('Squares: %d', avaliableSquares);
+        //console.log('Percentage: %d%', percentAvaliable);
+        if (avaliableSquares <= state.player.length && avaliableSquares <= enemySquares) return Number.MIN_SAFE_INTEGER;
+        else if (avaliableSquares <= state.player.length) return -(10 ** 8) * (1 / percentAvaliable);
+        if (enemySquares <= state.enemies[0].length) score += 10 ** 8;
         if (state.board.food.length <= 8) {
             foodWeight = 200 - (2 * state.player.health);
         } else if (state.player.health <= 40 || state.player.body.length < 4) {
@@ -136,12 +149,12 @@ export class MiniMax {
         }
         if (foodWeight) {
             for (let i = 0; i < state.board.food.length; i++) {
-                let food = state.board.food[i],
-                    dist = new Vector(food.x, food.y).distanceTo(new Vector(state.player.head.x, state.player.head.y));
-                score -= (dist * foodWeight) - i;
+                score -= (Vector.from(state.player.head).distanceTo(Vector.from(state.board.food[i])))
             }
         }
-        !score ? score *= 1 / playerSquaresPercentage : score * playerSquaresPercentage;
+        if (score) {
+            score *= percentAvaliable;
+        } else score *= 1 / percentAvaliable;
         return score;
     }
     private floodFill(pos: Vector, grid: number[][], open: number, isFailSafe: boolean = false): number {
@@ -150,7 +163,7 @@ export class MiniMax {
         open++;
         let neighbours = this.neighbours(pos, grid);
         for (let n of neighbours) {
-            open = this.floodFill(pos, grid, open);
+            open = this.floodFill(n, grid, open);
         }
         return open;
     }
@@ -162,6 +175,12 @@ export class MiniMax {
             new Vector(vector.x, vector.y + 1),
             new Vector(vector.x, vector.y - 1),
         ], result: Vector[] = [];
+        if (this.canWrap) {
+            for (let i in pNeighbors) {
+                if (this.isValidVector(pNeighbors[i])) continue;
+                wrapVector(pNeighbors[i], this.width, this.height);
+            }
+        }
         for (let n of pNeighbors) if (this.isValidVector(n) && this.isSafeSquare(n, board, isTailSafe)) result.push(n);
         return result;
     }

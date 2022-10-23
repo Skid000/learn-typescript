@@ -32,6 +32,10 @@ export function directionToAdjVector(a: Vector, b: Vector): string {
     }
     return fDir;
 }
+export function deepObjEquals(a: any, b: any): boolean {
+    for (let i in a) if (b[i] != a[i]) return false;
+    return true;
+}
 export function validMoves(populatedBoard: number[][], board: Board, id: string): Vector[] {
     let snake = findSnake(board, id), moves: Vector[] = [], head = new Vector(snake.head.x, snake.head.y);
     for (let dir in dir2Vector) {
@@ -70,4 +74,21 @@ export function removeElemFromArray<Type>(array: Type[], element: Type): void {
         }
     }
     return;
+}
+export function wrapVector(vector: Vector, width: number, height: number): Vector {
+    if (vector.x < 0) vector.x = width - 1;
+    if (vector.x == width) vector.x = 0;
+    if (vector.y < 0) vector.y = height - 1;
+    if (vector.y == height) vector.y = 0;
+    return vector;
+}
+export function dirToWrappedVector(a: Vector, b: Vector, width: number, height: number): string {
+    let fDir = 'null';
+    for (let dir in dir2Vector) {
+        if (wrapVector(a.add(dir2Vector[dir]), width, height).equals(b)) {
+            fDir = dir;
+            break;
+        }
+    }
+    return fDir;
 }
