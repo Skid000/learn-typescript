@@ -28,6 +28,7 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
         case 10:
         case 11:
             depth = 7;
+            break;
         case 12:
         case 13:
         case 14:
@@ -72,6 +73,7 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
         }
     }
     //console.log(shared.didEat);
+    max.setIdx(state);
     let miniMaxMove = max.bestMove(state, 0, true, {
         score: Number.MIN_SAFE_INTEGER,
         move: new Vector(0, 0)
