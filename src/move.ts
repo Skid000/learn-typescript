@@ -84,15 +84,17 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
     if (Vector.from(origSelf.head).equals(shared.foodVec)) shared.resetFood();
     max.moves[0].sort((a, b) => (b.score - a.score));
     let dirToWorstMove = dirToWrappedVector(Vector.from(origSelf.head), max.moves[0][max.moves[0].length - 1].move, origBoard.width, origBoard.height),
-        dirToBestMove = dirToWrappedVector(Vector.from(origSelf.head), miniMaxMove.move, origBoard.width, origBoard.height),
+        dirToBestMove = dirToWrappedVector(Vector.from(origSelf.head), miniMaxMove.move, origBoard.width, origBoard.height);
         // @ts-ignore
-        astarDestination = move != undefined && move?.valid ? Vector.from(origSelf.head).add(dir2Vector[move.moveResponse?.move]) : null;
+        //astarDestination = move != undefined && move?.valid ? Vector.from(origSelf.head).add(dir2Vector[move.moveResponse?.move]) : null;
     if (state.grid[miniMaxMove.move.x][miniMaxMove.move.y] == MiniMax.types.food) shared.setFood(Vector.from(miniMaxMove.move));
-    if (move != undefined && move.valid && move?.moveResponse?.move != dirToWorstMove) {
+  /*  
+  if (move != undefined && move.valid && move?.moveResponse?.move != dirToWorstMove) {
         // @ts-ignore
         if (state.grid[astarDestination.x][astarDestination.y] == MiniMax.types.food) shared.setFood(Vector.from(astarDestination));
         // @ts-ignore
         return move.moveResponse;
     }
+  */
     return { move: dirToBestMove, shout: "got screwed lol" };
 }

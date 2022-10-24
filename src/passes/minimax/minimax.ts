@@ -130,24 +130,24 @@ export class MiniMax {
     // TODO: make this smart!
     return state.enemies[this.enemyIdx];
   }
-  public setIdx(state:State){
-    let closestDist = Infinity,closest = 0,headVector = Vector.from(state.player.head);
-    for(let i = 0; i < state.enemies.length;i++){
-        let enemyHead = Vector.from(state.enemies[i].head),
+  public setIdx(state: State) {
+    let closestDist = Infinity, closest = 0, headVector = Vector.from(state.player.head);
+    for (let i = 0; i < state.enemies.length; i++) {
+      let enemyHead = Vector.from(state.enemies[i].head),
         dx = Math.abs(enemyHead.x - headVector.x),
         dy = Math.abs(enemyHead.y - headVector.y);
-        if(dx > this.width / 2) dx = this.width - dx;
-        if(dy > this.height / 2) dy = this.height - dy;
-        let dist = Math.sqrt(dx**2 + dy**2);
-        if(dist < closestDist){
-            closestDist = dist;
-            closest = i;
-        }
+      if (dx > this.width / 2) dx = this.width - dx;
+      if (dy > this.height / 2) dy = this.height - dy;
+      let dist = Math.sqrt(dx ** 2 + dy ** 2);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = i;
+      }
     }
     this.enemyIdx = closest;
   }
   private score(state: State, playerMoves: Vector[], enemyMoves: Vector[]): number {
-    let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0;
+    let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0,enemy = this.selectEnemy(state);
     if (!playerMoves.length || !state.player.health) return Number.MIN_SAFE_INTEGER;
     if (!enemyMoves.length || !state.enemies[0].health) return Number.MAX_SAFE_INTEGER;
     if (deepObjEquals(state.player.head, state.enemies[0].head)) {
@@ -158,17 +158,17 @@ export class MiniMax {
       enemySquares = this.floodFill(Vector.from(state.enemies[0].head), enemyBoard, 0, true);
     //console.log('Squares: %d', avaliableSquares);
     //console.log('Percentage: %d%', percentAvaliable);
-    if (avaliableSquares <= state.player.length && avaliableSquares <= enemySquares) return Number.MIN_SAFE_INTEGER;
+    if (avaliableSquares <= state.player.length) return Number.MIN_SAFE_INTEGER;
     else if (avaliableSquares <= state.player.length) return -(10 ** 8) * (1 / percentAvaliable);
     if (enemySquares <= state.enemies[0].length) score += 10 ** 8;
-    if(state.player.length > state.enemies[0].length) score += 10**9;
-    if(state.player.health < 40){
+    if (state.player.length > state.enemies[0].length) score += 10 ** 9;
+    if (state.player.health < 40) {
       foodWeight = 100 - state.player.health;
     }
-    if(enemySquares < avaliableSquares) score += 10**8
-    if(foodWeight){
-      foodWeight *= 1000;
-      for(let food of state.board.food){
+    if (enemySquares < avaliableSquares) score += 10 ** 8
+    if (foodWeight) {
+      foodWeight *= 450;
+      for (let food of state.board.food) {
         score += ((this.width * this.height) - (Vector.from(state.player.head).distanceTo(Vector.from(food)))) * foodWeight;
       }
     }
