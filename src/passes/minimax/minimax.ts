@@ -148,20 +148,20 @@ export class MiniMax {
   }
   private score(state: State, playerMoves: Vector[], enemyMoves: Vector[]): number {
     let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0,enemy = this.selectEnemy(state);
-    if (!playerMoves.length || !state.player.health) return Number.MIN_SAFE_INTEGER;
-    if (!enemyMoves.length || !state.enemies[0].health) return Number.MAX_SAFE_INTEGER;
-    if (deepObjEquals(state.player.head, state.enemies[0].head)) {
-      return state.player.length > state.enemies[0].length ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
+    if (!playerMoves.length || state.player.health <= 0) return Number.MIN_SAFE_INTEGER;
+    if (!enemyMoves.length || enemy.health <= 0) return Number.MAX_SAFE_INTEGER;
+    if (deepObjEquals(state.player.head, enemy.head)) {
+      return state.player.length > enemy.length ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
     }
     let avaliableSquares = this.floodFill(Vector.from(state.player.head), newBoard, 0, true),
       percentAvaliable = avaliableSquares / (this.width * this.height),
-      enemySquares = this.floodFill(Vector.from(state.enemies[0].head), enemyBoard, 0, true);
+      enemySquares = this.floodFill(Vector.from(enemy.head), enemyBoard, 0, true);
     //console.log('Squares: %d', avaliableSquares);
     //console.log('Percentage: %d%', percentAvaliable);
     if (avaliableSquares <= state.player.length) return Number.MIN_SAFE_INTEGER;
     else if (avaliableSquares <= state.player.length) return -(10 ** 8) * (1 / percentAvaliable);
-    if (enemySquares <= state.enemies[0].length) score += 10 ** 8;
-    if (state.player.length > state.enemies[0].length) score += 10 ** 9;
+    if (enemySquares <= enemy.length) score += 10 ** 8;
+    if (state.player.length > enemy.length) score += 10 ** 9;
     if (state.player.health < 40) {
       foodWeight = 100 - state.player.health;
     }
