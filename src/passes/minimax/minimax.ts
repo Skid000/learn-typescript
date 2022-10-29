@@ -163,17 +163,19 @@ export class MiniMax {
     //console.log('Squares: %d', avaliableSquares);
     //console.log('Percentage: %d%', percentAvaliable);
     if (avaliableSquares <= state.player.length) return Number.MIN_SAFE_INTEGER;
-    else if (avaliableSquares <= state.player.length) return -(10 ** 8) * (1 / percentAvaliable);
     if (enemySquares <= enemy.length) score += 10 ** 8;
-    if (state.player.length > enemy.length) score += 10 ** 9;
-    if (state.player.health < 40) {
+    if (state.player.health < 50) {
       foodWeight = 100 - state.player.health;
+    }else {
+      foodWeight = 100;
     }
     if (enemySquares < avaliableSquares) score += 10 ** 8
     if (foodWeight) {
       foodWeight *= 450;
+      let graph = new Graph(populateWrapped(state, this.canWrap), { diagonal: false, wrap: this.canWrap }), start = graph.grid[state.player.head.x][state.player.head.y];
       for (let food of state.board.food) {
-        score += ((this.width * this.height) - (Vector.from(state.player.head).distanceTo(Vector.from(food)))) * foodWeight;
+        let end = graph.grid[food.x][food.y], dist = Astar.search(graph, start, end).length;
+        score += ((this.width * this.height) - (dist)) * foodWeight;
       }
     }
     if (score > 0) {
