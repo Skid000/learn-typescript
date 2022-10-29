@@ -1,14 +1,18 @@
 import { GraphOption } from '../types';
 import { GridNode } from './GridNode';
 import { Astar } from './Astar';
+import { dir2Vector, wrapVector } from '../util/Util';
+import { Vector } from '../util/vector';
 export class Graph {
     public nodes: GridNode[];
     public diagonal: boolean;
     public grid: GridNode[][];
     public dirtyNodes: GridNode[];
+    public canWrap: boolean;
     constructor(gridIn: number[][], options: GraphOption = {}) {
         this.nodes = [];
         this.diagonal = !!options.diagonal;
+        this.canWrap = !!options.wrap;
         this.grid = [];
         this.dirtyNodes = [];
         for (let x: number = 0; x < gridIn.length; x++) {
@@ -40,17 +44,24 @@ export class Graph {
             x: number = node.x,
             y: number = node.y,
             grid: GridNode[][] = this.grid;
-        if (grid[x - 1] && grid[x - 1][y]) {
-            ret.push(grid[x - 1][y])
-        }
-        if (grid[x + 1] && grid[x + 1][y]) {
-            ret.push(grid[x + 1][y])
-        }
-        if (grid[x] && grid[x][y - 1]) {
-            ret.push(grid[x][y - 1])
-        }
-        if (grid[x] && grid[x][y + 1]) {
-            ret.push(grid[x][y + 1])
+        if (this.canWrap) {
+            for (let dir in dir2Vector) {
+                let wrappedN = wrapVector(new Vector(x, y).add(dir2Vector[dir]), this.grid.length, this.grid[0].length);
+                if (grid[wrappedN.x][wrappedN.y]) ret.push(grid[wrappedN.x][wrappedN.y]);
+            }
+        } else {
+            if (grid[x - 1] && grid[x - 1][y]) {
+                ret.push(grid[x - 1][y])
+            }
+            if (grid[x + 1] && grid[x + 1][y]) {
+                ret.push(grid[x + 1][y])
+            }
+            if (grid[x] && grid[x][y - 1]) {
+                ret.push(grid[x][y - 1])
+            }
+            if (grid[x] && grid[x][y + 1]) {
+                ret.push(grid[x][y + 1])
+            }
         }
         if (this.diagonal) {
             if (grid[x - 1] && grid[x - 1][y - 1]) {

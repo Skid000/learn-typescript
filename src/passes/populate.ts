@@ -1,5 +1,23 @@
 import { Battlesnake, Board } from "../types"
+import { dir2Vector, wrapVector } from "../util/Util";
 import { Vector } from "../util/vector";
+import { State } from "./minimax/state";
+export function populateWrapped(state: State, isWrapped: boolean): number[][] {
+    let grid = new Array(state.board.width).fill([]);
+    for (let col in grid) grid[col] = new Array(state.board.height).fill(1);
+    for (let hazards of state.board.hazards) grid[hazards.x][hazards.y] = 0;
+    for (let body of state.player.body) grid[body.x][body.y] = 0;
+    for (let snake of state.enemies) {
+        for (let body of snake.body) grid[body.x][body.y] = 0;
+        for (let dir in dir2Vector) {
+            let newHead = Vector.from(snake.head).add(dir2Vector[dir]);
+            isWrapped ? (wrapVector(newHead, state.board.width, state.board.height), grid[newHead.x][newHead.y] = 0) : (
+                grid[newHead.x] != undefined && grid[newHead.x][newHead.y] != undefined && (grid[newHead.x][newHead.y] = 0)
+            );
+        }
+    }
+    return grid;
+}
 export function populate(board: Board, self: Battlesnake): number[][] {
     // head branching directions
     const DIRS = [
@@ -12,11 +30,11 @@ export function populate(board: Board, self: Battlesnake): number[][] {
     let gameState = new Array(board.width).fill([]);
     for (let col in gameState) gameState[col] = new Array(board.height).fill(1);
     // pad edges with lower passability
-    for(var x = 0; x < gameState.length; x++){
-        for(var y = 0; y < gameState[x].length; y++){
-            if(!x || x == gameState.length - 1){
+    for (var x = 0; x < gameState.length; x++) {
+        for (var y = 0; y < gameState[x].length; y++) {
+            if (!x || x == gameState.length - 1) {
                 gameState[x][y] = 3;
-            }else if(!y || y == gameState[x].length -1){
+            } else if (!y || y == gameState[x].length - 1) {
                 gameState[x][y] = 3;
             }
         }

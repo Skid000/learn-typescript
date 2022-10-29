@@ -1,6 +1,9 @@
+import { Astar } from "../../pathfinding/Astar";
+import { Graph } from "../../pathfinding/Graph";
 import { Battlesnake, Board, MiniMaxMove } from "../../types";
 import { deepCloneObject, deepCopyArray, deepObjEquals, directionToAdjVector, wrapVector } from "../../util/Util";
 import { Vector } from "../../util/vector";
+import { populateWrapped } from "../populate";
 import { State } from "./state";
 
 export class MiniMax {
@@ -130,24 +133,25 @@ export class MiniMax {
     // TODO: make this smart!
     return state.enemies[this.enemyIdx];
   }
-  public setIdx(state: State) {
-    let closestDist = Infinity, closest = 0, headVector = Vector.from(state.player.head);
-    for (let i = 0; i < state.enemies.length; i++) {
-      let enemyHead = Vector.from(state.enemies[i].head),
-        dx = Math.abs(enemyHead.x - headVector.x),
-        dy = Math.abs(enemyHead.y - headVector.y);
-      if (dx > this.width / 2) dx = this.width - dx;
-      if (dy > this.height / 2) dy = this.height - dy;
-      let dist = Math.sqrt(dx ** 2 + dy ** 2);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closest = i;
+  public setIdx(state: State): void {
+    let grid = populateWrapped(state, this.canWrap), graph = new Graph(grid, {
+      diagonal: false,
+      wrap: this.canWrap
+    }), start = graph.grid[state.player.head.x][state.player.head.y], closestDist = Infinity, closest = 0;
+    for (let idx = 0; idx < state.enemies.length; idx++) {
+
+      let snake = state.enemies[idx], end = graph.grid[snake.head.x][snake.head.y],
+        path = Astar.search(graph, start, end);
+      if (!path.length) continue;
+      if (path.length < closestDist) {
+        closest = idx;
+        closestDist = path.length;
       }
     }
     this.enemyIdx = closest;
   }
   private score(state: State, playerMoves: Vector[], enemyMoves: Vector[]): number {
-    let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0,enemy = this.selectEnemy(state);
+    let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0, enemy = this.selectEnemy(state);
     if (!playerMoves.length || state.player.health <= 0) return Number.MIN_SAFE_INTEGER;
     if (!enemyMoves.length || enemy.health <= 0) return Number.MAX_SAFE_INTEGER;
     if (deepObjEquals(state.player.head, enemy.head)) {

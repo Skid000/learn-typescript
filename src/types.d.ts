@@ -88,6 +88,7 @@ export interface Coord {
   }
   export interface GraphOption{
     diagonal?: boolean;
+    wrap?: boolean;
   }
   export interface SearchOption{
     heuristic?: Function;
