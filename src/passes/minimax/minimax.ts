@@ -155,7 +155,7 @@ export class MiniMax {
     if (!playerMoves.length || state.player.health <= 0) return Number.MIN_SAFE_INTEGER;
     if (!enemyMoves.length || enemy.health <= 0) return Number.MAX_SAFE_INTEGER;
     if (deepObjEquals(state.player.head, enemy.head)) {
-      return state.player.length > enemy.length ? Number.MIN_SAFE_INTEGER + 10 : Number.MIN_SAFE_INTEGER;
+      return state.player.length > enemy.length ? Number.MIN_SAFE_INTEGER + 10 ** 20 : Number.MIN_SAFE_INTEGER;
     }
     let avaliableSquares = this.floodFill(Vector.from(state.player.head), newBoard, 0, true),
       percentAvaliable = avaliableSquares / (this.width * this.height),
@@ -164,10 +164,10 @@ export class MiniMax {
     //console.log('Percentage: %d%', percentAvaliable);
     if (avaliableSquares <= state.player.length) return Number.MIN_SAFE_INTEGER;
     if (enemySquares <= enemy.length) score += 10 ** 8;
-    if (state.player.health < 50) {
+    if (state.player.health < 40) {
       foodWeight = 100 - state.player.health;
     } else {
-      foodWeight = 200 - (2 * state.player.health);
+      foodWeight = 300 - (3 * state.player.health);
     }
     if (enemySquares < avaliableSquares) score += 10 ** 8
     if (foodWeight) {
