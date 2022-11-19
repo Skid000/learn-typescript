@@ -155,7 +155,7 @@ export class MiniMax {
     if (!playerMoves.length || state.player.health <= 0) return Number.MIN_SAFE_INTEGER;
     if (!enemyMoves.length || enemy.health <= 0) return Number.MAX_SAFE_INTEGER;
     if (deepObjEquals(state.player.head, enemy.head)) {
-      return state.player.length > enemy.length ? Number.MIN_SAFE_INTEGER + 10 ** 20 : Number.MIN_SAFE_INTEGER;
+      return state.player.length > enemy.length ? Number.MAX_SAFE_INTEGER / 2000 : Number.MIN_SAFE_INTEGER;
     }
     let avaliableSquares = this.floodFill(Vector.from(state.player.head), newBoard, 0, true),
       percentAvaliable = avaliableSquares / (this.width * this.height),
@@ -172,9 +172,10 @@ export class MiniMax {
     if (enemySquares < avaliableSquares) score += 10 ** 8
     if (foodWeight) {
       let graph = new Graph(populateWrapped(state, this.canWrap), { diagonal: false, wrap: this.canWrap }), start = graph.grid[state.player.head.x][state.player.head.y];
-      for (let food of state.board.food) {
+      for (let i = 0; i < state.board.food.length; i++) {
+        let food = state.board.food[i];
         let end = graph.grid[food.x][food.y], dist = Astar.search(graph, start, end).length;
-        score -= (dist) * foodWeight - 1;
+        score -= (dist) * foodWeight - i;
       }
     }
     if (score > 0) {
