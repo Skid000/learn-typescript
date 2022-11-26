@@ -82,7 +82,7 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
   }, {
     score: Number.MAX_SAFE_INTEGER,
     move: new Vector(0, 0)
-  }, shared.didEat);
+  }, state,shared.didEat);
   if (Vector.from(origSelf.head).equals(shared.foodVec)) shared.resetFood();
     /*
     max.moves[0].sort((a, b) => (b.score - a.score));
