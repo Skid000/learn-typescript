@@ -1,7 +1,7 @@
 import { Astar } from "../../pathfinding/Astar";
 import { Graph } from "../../pathfinding/Graph";
 import { Battlesnake, Board, MiniMaxMove } from "../../types";
-import { deepCloneObject, deepCopyArray, deepObjEquals, directionToAdjVector, wrapVector } from "../../util/Util";
+import { deepCloneObject, deepCopyArray, deepObjEquals, directionToAdjVector, findSnake, wrapVector } from "../../util/Util";
 import { Vector } from "../../util/vector";
 import { populateWrapped } from "../populate";
 import { State } from "./state";
@@ -42,7 +42,7 @@ export class MiniMax {
       enemy = this.selectEnemy(state),
       enemyMoves = this.neighbours(Vector.from(enemy.head), state.grid, isEnemyTailSafe),
       moves: Vector[] = maxPlayer ? playerMoves : enemyMoves;
-    if (depth == this.MAX_DEPTH || !moves.length || !player.health || !enemy.health || deepObjEquals(player.head, enemy.head)) {
+    if (depth == this.MAX_DEPTH || !moves.length || !player.health || !enemy.health || !enemyMoves.length){//deepObjEquals(player.head, enemy.head)) {
       //console.log("Returning up tree");
       //this.printBoard(state);
       let score = this.score(state, playerMoves, enemyMoves);
@@ -88,7 +88,7 @@ export class MiniMax {
           //console.log("Setting alpha move: ", move);
           alpha.score = newAlpha.score, alpha.move = move;
         }
-        if (beta.score <= alpha.score) {
+        if (beta.score < alpha.score) {
           break;
         }
       }
@@ -139,7 +139,6 @@ export class MiniMax {
       wrap: this.canWrap
     }), start = graph.grid[state.player.head.x][state.player.head.y], closestDist = Infinity, closest = 0;
     for (let idx = 0; idx < state.enemies.length; idx++) {
-
       let snake = state.enemies[idx], end = graph.grid[snake.head.x][snake.head.y],
         path = Astar.search(graph, start, end);
       if (!path.length) continue;
@@ -148,14 +147,21 @@ export class MiniMax {
         closestDist = path.length;
       }
     }
+    for(let idx = 0; idx < state.enemies.length; idx++) {
+      if(idx == closest) continue;
+      let snake = state.enemies[idx],
+      tail = snake.body[snake.body.length - 1];
+      state.grid[tail.x][tail.y] = MiniMax.types.body;
+    }
     this.enemyIdx = closest;
   }
   private score(state: State, playerMoves: Vector[], enemyMoves: Vector[]): number {
     let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0, enemy = this.selectEnemy(state);
-    if (!playerMoves.length || state.player.health <= 0) return Number.MIN_SAFE_INTEGER;
-    if (!enemyMoves.length || enemy.health <= 0) return Number.MAX_SAFE_INTEGER;
+    if (!playerMoves.length || state.player.health <= 0) return -Infinity;
+    if (!enemyMoves.length || enemy.health <= 0) return Infinity;
     if (deepObjEquals(state.player.head, enemy.head)) {
-      return state.player.length > enemy.length ? Number.MIN_SAFE_INTEGER + 1 : Number.MIN_SAFE_INTEGER;
+      console.log("PLAYER",state.player,"ENEMY",enemy);
+      return state.player.length > enemy.length ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
     }
     let avaliableSquares = this.floodFill(Vector.from(state.player.head), newBoard, 0, true),
       percentAvaliable = avaliableSquares / (this.width * this.height),
