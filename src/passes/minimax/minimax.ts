@@ -11,7 +11,7 @@ export class MiniMax {
   private height: number;
   private canWrap: boolean;
   private MAX_DEPTH: number;
-  private enemyIdx: number;
+  public enemyIdx: number;
   public moves: MiniMaxMove[][];
   public static types: { [key: string]: number; } = {
     hazard: 0,
@@ -42,8 +42,8 @@ export class MiniMax {
       enemy = this.selectEnemy(state),
       enemyMoves = this.neighbours(Vector.from(enemy.head), state.grid, isEnemyTailSafe),
       moves: Vector[] = maxPlayer ? playerMoves : enemyMoves;
-    if (depth == this.MAX_DEPTH || !moves.length || !player.health || !enemy.health || !enemyMoves.length){//deepObjEquals(player.head, enemy.head)) {
-      //console.log("Returning up tree");
+    if (depth == this.MAX_DEPTH || !moves.length || !player.health || !enemy.health || deepObjEquals(player.head, enemy.head)) {
+      ////console.log("Returning up tree");
       //this.printBoard(state);
       let score = this.score(state, playerMoves, enemyMoves);
       //console.log(score);
@@ -78,7 +78,7 @@ export class MiniMax {
         //console.log("Current newAlpha value: ", newAlpha.score);
         //console.log("Current newAlpha move: ", move);
         //this.printBoard(newState);
-        // console.log(newAlpha,depth);
+        // //console.log(newAlpha,depth);
         this.moves[depth].push({
           score: newAlpha.score,
           move: move
@@ -88,20 +88,20 @@ export class MiniMax {
           //console.log("Setting alpha move: ", move);
           alpha.score = newAlpha.score, alpha.move = move;
         }
-        if (beta.score < alpha.score) {
+        if (beta.score <= alpha.score) {
           break;
         }
       }
       return alpha;
     } else {
       for (let move of moves) {
-        //console.log('Cur move: ' + directionToAdjVector(Vector.from(enemy.head), move))
         let newState: State = deepCloneObject(state),
           newGrid = newState.grid,
           eating = false,
           enemy = this.selectEnemy(newState),
           length = enemy.body.length - 1,
           growing = length < 2;
+          //console.log('Cur move: ' + directionToAdjVector(Vector.from(enemy.head), move))
         if (newGrid[move.x][move.y] == MiniMax.types.food) {
           eating = true;
           enemy.health = 100;
@@ -159,18 +159,19 @@ export class MiniMax {
     let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0, enemy = this.selectEnemy(state);
     if (!playerMoves.length || state.player.health <= 0) return -Infinity;
     if (!enemyMoves.length || enemy.health <= 0) return Infinity;
+    
     if (deepObjEquals(state.player.head, enemy.head)) {
-      console.log("PLAYER",state.player,"ENEMY",enemy);
-      return state.player.length > enemy.length ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
+      //console.log("PLAYER",state.player.name,"ENEMY",enemy.name,"MOVES",playerMoves,enemyMoves);
+      return state.player.length > enemy.length  ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
     }
     let avaliableSquares = this.floodFill(Vector.from(state.player.head), newBoard, 0, true),
       percentAvaliable = avaliableSquares / (this.width * this.height),
       enemySquares = this.floodFill(Vector.from(enemy.head), enemyBoard, 0, true);
-    //console.log('Squares: %d', avaliableSquares);
-    //console.log('Percentage: %d%', percentAvaliable);
+    ////console.log('Squares: %d', avaliableSquares);
+    ////console.log('Percentage: %d%', percentAvaliable);
     if (avaliableSquares <= state.player.length) return Number.MIN_SAFE_INTEGER;
     if (enemySquares <= enemy.length) score += 10 ** 8;
-    if (state.player.health < 40) {
+    if (state.player.health < 20) {
       foodWeight = 100 - state.player.health;
     } else {
       foodWeight = 300 - (3 * state.player.health);
@@ -200,7 +201,7 @@ export class MiniMax {
     return open;
   }
 
-  private neighbours(vector: Vector, board: number[][], isTailSafe: boolean = false): Vector[] {
+  neighbours(vector: Vector, board: number[][], isTailSafe: boolean = false): Vector[] {
     let pNeighbors = [
       new Vector(vector.x + 1, vector.y),
       new Vector(vector.x - 1, vector.y),
@@ -256,6 +257,6 @@ export class MiniMax {
       }
       boardString += "\n";
     }
-    console.log(boardString);
+    //console.log(boardString);
   }
 }

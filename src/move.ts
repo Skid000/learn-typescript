@@ -88,7 +88,7 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
     max.moves[0].sort((a, b) => (b.score - a.score));
     let dirToWorstMove = dirToWrappedVector(Vector.from(origSelf.head), max.moves[0][max.moves[0].length - 1].move, origBoard.width, origBoard.height),
         */let dirToBestMove = dirToWrappedVector(Vector.from(origSelf.head), miniMaxMove.move, origBoard.width, origBoard.height);
-  // @ts-ignore
+        // @ts-ignore
   //astarDestination = move != undefined && move?.valid ? Vector.from(origSelf.head).add(dir2Vector[move.moveResponse?.move]) : null;
   if (state.grid[miniMaxMove.move.x][miniMaxMove.move.y] == MiniMax.types.food) shared.setFood(Vector.from(miniMaxMove.move));
   /*  
