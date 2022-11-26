@@ -155,7 +155,7 @@ export class MiniMax {
     if (!playerMoves.length || state.player.health <= 0) return Number.MIN_SAFE_INTEGER;
     if (!enemyMoves.length || enemy.health <= 0) return Number.MAX_SAFE_INTEGER;
     if (deepObjEquals(state.player.head, enemy.head)) {
-      return state.player.length > enemy.length ? Number.MAX_SAFE_INTEGER / 2000 : Number.MIN_SAFE_INTEGER;
+      return state.player.length > enemy.length ? Number.MIN_SAFE_INTEGER + 1 : Number.MIN_SAFE_INTEGER;
     }
     let avaliableSquares = this.floodFill(Vector.from(state.player.head), newBoard, 0, true),
       percentAvaliable = avaliableSquares / (this.width * this.height),
