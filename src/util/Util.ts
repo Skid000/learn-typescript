@@ -82,6 +82,13 @@ export function wrapVector(vector: Vector, width: number, height: number): Vecto
     if (vector.y == height) vector.y = 0;
     return vector;
 }
+export function distanceToWrapped(vector: Vector, vector2: Vector, width: number, height: number): number {
+    let dx = Math.abs(vector.x - vector2.x),
+    dy = Math.abs(vector.y - vector2.y);
+    if(dx > width / 2) dx = width - dx;
+    if(dy > height / 2) dy = height - dy;
+    return Math.sqrt(dx*dx + dy*dy);
+}
 export function dirToWrappedVector(a: Vector, b: Vector, width: number, height: number): string {
     let fDir = 'null';
     for (let dir in dir2Vector) {

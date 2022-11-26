@@ -1,7 +1,7 @@
 import { Astar } from "../../pathfinding/Astar";
 import { Graph } from "../../pathfinding/Graph";
 import { Battlesnake, Board, MiniMaxMove } from "../../types";
-import { deepCloneObject, deepCopyArray, deepObjEquals, directionToAdjVector, findSnake, wrapVector } from "../../util/Util";
+import { deepCloneObject, deepCopyArray, deepObjEquals, directionToAdjVector, distanceToWrapped, findSnake, wrapVector } from "../../util/Util";
 import { Vector } from "../../util/vector";
 import { populateWrapped } from "../populate";
 import { State } from "./state";
@@ -139,12 +139,11 @@ export class MiniMax {
       wrap: this.canWrap
     }), start = graph.grid[state.player.head.x][state.player.head.y], closestDist = Infinity, closest = 0;
     for (let idx = 0; idx < state.enemies.length; idx++) {
-      let snake = state.enemies[idx], end = graph.grid[snake.head.x][snake.head.y],
-        path = Astar.search(graph, start, end);
-      if (!path.length) continue;
-      if (path.length < closestDist) {
+      let snake = state.enemies[idx], end = snake.head,
+        path = distanceToWrapped(Vector.from(state.player.head),Vector.from(end),state.board.width,state.board.height);
+      if (path < closestDist) {
         closest = idx;
-        closestDist = path.length;
+        closestDist = path;
       }
     }
     for(let idx = 0; idx < state.enemies.length; idx++) {

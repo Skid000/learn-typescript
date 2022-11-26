@@ -76,6 +76,7 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
   */
   //console.log(shared.didEat);
   max.setIdx(state);
+  console.log(state.enemies[max.enemyIdx].name,max.enemyIdx);
   let miniMaxMove = max.bestMove(state, 0, true, {
     score: Number.MIN_SAFE_INTEGER,
     move: new Vector(0, 0)
