@@ -1,4 +1,5 @@
 run = "npm start"
+hidden = [".config"]
 
 [languages.typescript]
 pattern = "**/{*.ts,*.js,*.tsx,*.jsx}"

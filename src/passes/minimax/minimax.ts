@@ -31,7 +31,7 @@ export class MiniMax {
     for (let i = 0; i < MAX_DEPTH; i++) this.moves.push([]);
     this.enemyIdx = 0;
   }
-  bestMove(state: State, depth: number, maxPlayer: boolean, alpha: MiniMaxMove, beta: MiniMaxMove, previousState: State,didEat: boolean = false): MiniMaxMove {
+  bestMove(state: State, depth: number, maxPlayer: boolean, alpha: MiniMaxMove, beta: MiniMaxMove, previousState: State, didEat: boolean = false): MiniMaxMove {
     //console.log(`Depth: ${depth}\nMaxingPlayer:${maxPlayer}`);
     alpha = deepCloneObject(alpha);
     beta = deepCloneObject(beta);
@@ -45,7 +45,7 @@ export class MiniMax {
     if (depth == this.MAX_DEPTH || !moves.length || !player.health || !enemy.health || deepObjEquals(player.head, enemy.head)) {
       ////console.log("Returning up tree");
       //this.printBoard(state);
-      let score = this.score(state, playerMoves, enemyMoves,previousState);
+      let score = this.score(state, playerMoves, enemyMoves, previousState);
       //console.log(score);
       return { score: score, move: new Vector(0, 0) }
     }
@@ -72,7 +72,7 @@ export class MiniMax {
         newGrid[move.x][move.y] = MiniMax.types.head;
         newState.player.head = move;
         newState.player.body.unshift(move);
-        let newAlpha = this.bestMove(newState, depth + 1, false, alpha, beta,state);
+        let newAlpha = this.bestMove(newState, depth + 1, false, alpha, beta, state);
         //console.log("Current alpha value: ", alpha.score);
         //console.log("Current alpha move: ", alpha.move);
         //console.log("Current newAlpha value: ", newAlpha.score);
@@ -101,7 +101,7 @@ export class MiniMax {
           enemy = this.selectEnemy(newState),
           length = enemy.body.length - 1,
           growing = length < 2;
-          //console.log('Cur move: ' + directionToAdjVector(Vector.from(enemy.head), move))
+        //console.log('Cur move: ' + directionToAdjVector(Vector.from(enemy.head), move))
         if (newGrid[move.x][move.y] == MiniMax.types.food) {
           eating = true;
           enemy.health = 100;
@@ -117,7 +117,7 @@ export class MiniMax {
         newGrid[move.x][move.y] = MiniMax.types.head;
         enemy.head = move;
         enemy.body.unshift(move);
-        let newBeta = this.bestMove(newState, depth + 1, true, alpha, beta,state);
+        let newBeta = this.bestMove(newState, depth + 1, true, alpha, beta, state);
         if (newBeta.score < beta.score) {
           beta.score = newBeta.score, beta.move = move;
         }
@@ -140,31 +140,31 @@ export class MiniMax {
     }), start = graph.grid[state.player.head.x][state.player.head.y], closestDist = Infinity, closest = 0;
     for (let idx = 0; idx < state.enemies.length; idx++) {
       let snake = state.enemies[idx], end = snake.head,
-        path = distanceToWrapped(Vector.from(state.player.head),Vector.from(end),state.board.width,state.board.height);
+        path = distanceToWrapped(Vector.from(state.player.head), Vector.from(end), state.board.width, state.board.height);
       if (path < closestDist) {
         closest = idx;
         closestDist = path;
       }
     }
-    for(let idx = 0; idx < state.enemies.length; idx++) {
-      if(idx == closest) continue;
+    for (let idx = 0; idx < state.enemies.length; idx++) {
+      if (idx == closest) continue;
       let snake = state.enemies[idx],
-      tail = snake.body[snake.body.length - 1];
+        tail = snake.body[snake.body.length - 1];
       state.grid[tail.x][tail.y] = MiniMax.types.body;
     }
     this.enemyIdx = closest;
   }
-  private score(state: State, playerMoves: Vector[], enemyMoves: Vector[],previousState:State): number {
+  private score(state: State, playerMoves: Vector[], enemyMoves: Vector[], previousState: State): number {
     let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0, enemy = this.selectEnemy(state);
     if (!playerMoves.length || state.player.health <= 0) return -Infinity;
     if (!enemyMoves.length || enemy.health <= 0) return Infinity;
-    
+
     if (deepObjEquals(state.player.head, enemy.head)) {
       //console.log("PLAYER",state.player.name,"ENEMY",enemy.name,"MOVES",playerMoves,enemyMoves);
       let enemyLast = this.selectEnemy(previousState);
-      let enemyMoves = this.neighbours(Vector.from(enemyLast.head),previousState.grid,true);
-      if(enemyMoves.length > 1) return Number.MIN_SAFE_INTEGER + 1;
-      return state.player.length > enemy.length  ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
+      let enemyMoves = this.neighbours(Vector.from(enemyLast.head), previousState.grid, true);
+      if (enemyMoves.length > 1) return Number.MIN_SAFE_INTEGER + 1;
+      return state.player.length > enemy.length ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
     }
     let avaliableSquares = this.floodFill(Vector.from(state.player.head), newBoard, 0, true),
       percentAvaliable = avaliableSquares / (this.width * this.height),
@@ -173,11 +173,12 @@ export class MiniMax {
     ////console.log('Percentage: %d%', percentAvaliable);
     if (avaliableSquares <= state.player.length) return Number.MIN_SAFE_INTEGER;
     if (enemySquares <= enemy.length) score += 10 ** 8;
-    if (state.player.health < 50) {
-      foodWeight = 100 - state.player.health;
+    if (state.player.health < 85) {
+      foodWeight = (85 - state.player.health);
     } else {
-      foodWeight = 300 - (3 * state.player.health);
+      foodWeight = 200 - (2 * state.player.health);
     }
+    foodWeight *= Math.abs(Math.log(-(x-30)*0.06))
     if (enemySquares < avaliableSquares) score += 10 ** 8
     if (foodWeight) {
       let graph = new Graph(populateWrapped(state, this.canWrap), { diagonal: false, wrap: this.canWrap }), start = graph.grid[state.player.head.x][state.player.head.y];
