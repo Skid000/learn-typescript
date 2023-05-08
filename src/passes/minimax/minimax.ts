@@ -178,7 +178,7 @@ export class MiniMax {
     } else {
       foodWeight = 200 - (2 * state.player.health);
     }
-    foodWeight *= Math.abs(Math.log(-(x-30)*0.06))
+    foodWeight *= 0.000008*(state.player.length ** 3)
     if (enemySquares < avaliableSquares) score += 10 ** 8
     if (foodWeight) {
       let graph = new Graph(populateWrapped(state, this.canWrap), { diagonal: false, wrap: this.canWrap }), start = graph.grid[state.player.head.x][state.player.head.y];
