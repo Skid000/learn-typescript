@@ -76,7 +76,7 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
   */
   //console.log(shared.didEat);
   max.setIdx(state);
-  console.log(state.enemies[max.enemyIdx].name, max.enemyIdx);
+  //console.log(state.enemies[max.enemyIdx].name, max.enemyIdx);
   let miniMaxMove = max.bestMove(state, 0, true, {
     score: Number.MIN_SAFE_INTEGER,
     move: new Vector(0, 0)
@@ -84,6 +84,7 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
     score: Number.MAX_SAFE_INTEGER,
     move: new Vector(0, 0)
   }, state, shared.didEat);
+  console.log(miniMaxMove);
   if (Vector.from(origSelf.head).equals(shared.foodVec)) shared.resetFood();
     /*
     max.moves[0].sort((a, b) => (b.score - a.score));

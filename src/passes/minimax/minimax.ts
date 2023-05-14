@@ -1,3 +1,4 @@
+import { stat } from "fs";
 import { Astar } from "../../pathfinding/Astar";
 import { Graph } from "../../pathfinding/Graph";
 import { Battlesnake, Board, MiniMaxMove } from "../../types";
@@ -155,42 +156,33 @@ export class MiniMax {
     this.enemyIdx = closest;
   }
   private score(state: State, playerMoves: Vector[], enemyMoves: Vector[], previousState: State): number {
-    let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0, enemy = this.selectEnemy(state);
-    if (!playerMoves.length || state.player.health <= 0) return -Infinity;
-    if (!enemyMoves.length || enemy.health <= 0) return Infinity;
-
+    let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0, enemy = this.selectEnemy(state), playerLength = state.player.length, enemyLength = enemy.length;
+    // get sum of food locations weights then average it
+    let graph = new Graph(populateWrapped(state, this.canWrap), { diagonal: false, wrap: this.canWrap }), start = graph.grid[state.player.head.x][state.player.head.y];
+    for (let i = 0; i < state.board.food.length; i++) {
+      let food = state.board.food[i];
+      let end = graph.grid[food.x][food.y], dist = Astar.search(graph, start, end).length + 1;
+      foodWeight += 2500 / ((dist * (state.player.health + 1)) ** ((state.player.length + 1) / Math.sqrt(311)));
+    }
+    foodWeight /= state.board.food.length * 2;
+    // score head on collison
+    let headOnScore = 0;
     if (deepObjEquals(state.player.head, enemy.head)) {
-      //console.log("PLAYER",state.player.name,"ENEMY",enemy.name,"MOVES",playerMoves,enemyMoves);
-      let enemyLast = this.selectEnemy(previousState);
-      let enemyMoves = this.neighbours(Vector.from(enemyLast.head), previousState.grid, true);
-      if (enemyMoves.length > 1) return Number.MIN_SAFE_INTEGER + 1;
-      return state.player.length > enemy.length ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
+      let enemyMovesLast = this.neighbours(Vector.from(this.selectEnemy(previousState).head), previousState.grid, true).length,
+        playerMovesLast = this.neighbours(Vector.from(previousState.player.head), previousState.grid, true).length;
+      headOnScore = 100 * Math.pow(Math.sqrt(1 - (enemyMovesLast / playerMovesLast)) * Math.sqrt(1 - ((enemyLength + 1) / playerLength)), 3)
     }
-    let avaliableSquares = this.floodFill(Vector.from(state.player.head), newBoard, 0, true),
-      percentAvaliable = avaliableSquares / (this.width * this.height),
-      enemySquares = this.floodFill(Vector.from(enemy.head), enemyBoard, 0, true);
-    ////console.log('Squares: %d', avaliableSquares);
-    ////console.log('Percentage: %d%', percentAvaliable);
-    if (avaliableSquares <= state.player.length) return Number.MIN_SAFE_INTEGER;
-    if (enemySquares <= enemy.length) score += 10 ** 8;
-    if (state.player.health < 85) {
-      foodWeight = (85 - state.player.health);
-    } else {
-      foodWeight = 200 - (2 * state.player.health);
-    }
-    foodWeight *= 0.000008*(state.player.length ** 3)
-    if (enemySquares < avaliableSquares) score += 10 ** 8
-    if (foodWeight) {
-      let graph = new Graph(populateWrapped(state, this.canWrap), { diagonal: false, wrap: this.canWrap }), start = graph.grid[state.player.head.x][state.player.head.y];
-      for (let i = 0; i < state.board.food.length; i++) {
-        let food = state.board.food[i];
-        let end = graph.grid[food.x][food.y], dist = Astar.search(graph, start, end).length;
-        score -= (dist) * foodWeight - i;
-      }
-    }
-    if (score > 0) {
-      score *= percentAvaliable;
-    } else score *= 1 / percentAvaliable;
+    // score area control
+    let areaScore = 0, playerAreaControlled = this.floodFill(Vector.from(state.player.head), newBoard, 0, true), enemyControlled = this.floodFill(Vector.from(enemy.head), enemyBoard, 0, true);
+    areaScore = ((playerAreaControlled * playerLength) - (enemyControlled * enemyLength)) / 10
+    // add everything into score
+    score += areaScore * 10; //make area bigger
+    score += foodWeight;
+    score += headOnScore * 10; // make head on bigger
+    // implement conditions
+    if (isNaN(headOnScore)) score = -Infinity; // enemy bigger then us OR they have more moves then us in a headon
+    if (state.player.health <= 0 || playerMoves.length == 0) score = -Infinity; // we died in this state
+    if (enemy.health <= 0) score = Infinity; // the enemy died
     return score;
   }
   private floodFill(pos: Vector, grid: number[][], open: number, isFailSafe: boolean = false): number {
