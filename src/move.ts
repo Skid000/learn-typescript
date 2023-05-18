@@ -8,7 +8,8 @@ import { Vector } from "./util/vector";
 import { MiniMax } from "./passes/minimax/minimax";
 import { State } from "./passes/minimax/state";
 import { Shared } from "./persistence/shared";
-export default function move(gameState: GameState, shared: Shared): MoveResponse {
+export function move(gameState: GameState, shared: Shared | undefined): MoveResponse {
+  if (shared == undefined) return { move: '' };
   const origBoard = gameState.board,
     origSelf = gameState.you,
     turn = gameState.turn;
@@ -54,7 +55,7 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
       //console.log(gameState.game.ruleset.name);
       break;
   }
-  const max = new MiniMax(origBoard.width, origBoard.height, depth, isWrapped),
+  const max = new MiniMax(shared.member, origBoard.width, origBoard.height, depth, isWrapped),
     state = new State(origBoard, origSelf);
   /*
       let populatedBoard = populate(origBoard, origSelf), destinations = food(origBoard, populatedBoard, origSelf), move;
@@ -84,7 +85,7 @@ export default function move(gameState: GameState, shared: Shared): MoveResponse
     score: Number.MAX_SAFE_INTEGER,
     move: new Vector(0, 0)
   }, state, shared.didEat);
-  console.log(miniMaxMove);
+  //console.log(miniMaxMove);
   if (Vector.from(origSelf.head).equals(shared.foodVec)) shared.resetFood();
     /*
     max.moves[0].sort((a, b) => (b.score - a.score));

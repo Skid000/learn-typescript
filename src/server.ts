@@ -1,14 +1,21 @@
 import express, { Request, Response, NextFunction } from "express"
 import { Shared } from "./persistence/shared";
-const persistent = new Map<string, Shared>();
+import { Population } from "./genetic_algo/population";
+import { info } from "./info";
+import { start } from "./start";
+import config from "./genetic_algo/config.json"
+import { move } from "./move";
+import { end } from "./end";
+const persistent = new Map<string, Shared>(),
+  population = new Population(config.size, config.generations, config.turns, config.length, config.mutationRate, config.elitism);
 export interface BattlesnakeHandlers {
-  info: Function;
-  start: Function;
-  move: Function;
-  end: Function;
+  info: typeof info;
+  start: typeof start;
+  move: typeof move;
+  end: typeof end;
 }
 
-export default function runServer(handlers: BattlesnakeHandlers) {
+export function runServer(handlers: BattlesnakeHandlers) {
   const app = express();
   app.use(express.json());
 
@@ -17,16 +24,16 @@ export default function runServer(handlers: BattlesnakeHandlers) {
   });
 
   app.post("/start", (req: Request, res: Response) => {
-    handlers.start(req.body,persistent);
+    handlers.start(req.body, persistent,population);
     res.send("ok");
   });
 
   app.post("/move", (req: Request, res: Response) => {
-    res.send(handlers.move(req.body,persistent.get(req.body.game.id)));
+    res.send(handlers.move(req.body, persistent.get(req.body.game.id)));
   });
 
   app.post("/end", (req: Request, res: Response) => {
-    handlers.end(req.body,persistent);
+    handlers.end(req.body, persistent,population);
     res.send("ok");
   });
 

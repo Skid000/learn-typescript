@@ -1,3 +1,4 @@
+import { writeFileSync } from "fs";
 import { MemberParams } from "./types";
 function random(): number {
     return Math.random() * 2 - 1;
@@ -21,12 +22,18 @@ export class Population {
         this.popMembers = [];
         for (let i = 0; i < this.size; i++) this.popMembers.push(new Member());
     }
-    score(member: Member, turns: number, length: number) {
+    score(member: Member | undefined, turns: number, length: number) {
+        if(member == undefined) return;
         member.fitness = (turns * length) / (this.turns * this.len);
     }
     getNextMember(): Member {
-        if(this.curPopIndex == this.size){
-            this.mate;
+        if (this.curPopIndex == this.size) {
+            this.curPopIndex = 0;
+            this.generation++;
+            this.popMembers.sort((a, b) => b.fitness - a.fitness);
+            writeFileSync(`./gen_${this.generation - 1}.json`, JSON.stringify(this.popMembers), 'utf-8');
+            console.log(`Started new generation: ${this.generation}\n Best score from previous generation: ${this.popMembers[0].fitness}`);
+            this.mate();
         }
         let mem = this.popMembers[this.curPopIndex];
         this.curPopIndex++;
@@ -35,6 +42,9 @@ export class Population {
     private mate() {
         let pool = this.matingPool();
         for (let i = 0; i < this.size; i++) {
+            if (i < this.elitism) {
+                continue;
+            }
             let a = pool[random2(0, pool.length)],
                 b = pool[random2(0, pool.length)],
                 child = a.repro(b);
@@ -44,16 +54,18 @@ export class Population {
     }
     private matingPool() {
         let pool: Member[] = [];
-        this.popMembers.forEach(e => {
-            let f = Math.floor(e.fitness * 100) || 1;
+        for(let i = 0; i < this.popMembers.length; i++){
+            let e = this.popMembers[i];
+            if(i > Math.floor(this.popMembers.length * 0.7)) continue;
+            let f = Math.floor(e.fitness * 100);
             while (f--) {
                 pool.push(e);
             }
-        });
+        }
         return pool;
     }
 }
-class Member {
+export class Member {
     public fitness: number;
     public param: MemberParams;
     constructor() {
