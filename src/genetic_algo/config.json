@@ -2,5 +2,7 @@
     "size": 100,
     "generations": 100,
     "turns": 450,
-    "length": 50
+    "length": 50,
+    "mutationRate": 0.01,
+    "elitism": 3
 }
