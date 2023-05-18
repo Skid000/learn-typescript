@@ -1,5 +1,6 @@
 import { writeFileSync } from "fs";
 import { MemberParams } from "./types";
+import { GameState } from "../types";
 function random(): number {
     return Math.random() * 2 - 1;
 } function random2(min: number, max: number) {
@@ -22,9 +23,14 @@ export class Population {
         this.popMembers = [];
         for (let i = 0; i < this.size; i++) this.popMembers.push(new Member());
     }
-    score(member: Member | undefined, turns: number, length: number) {
+    score(member: Member | undefined, turns: number, length: number,gameState: GameState) {
         if(member == undefined) return;
         member.fitness = (turns * length) / (this.turns * this.len);
+        switch(!0){
+            case gameState.board.snakes[0].health == 0:
+                member.fitness++;
+                break;
+        }
     }
     getNextMember(): Member {
         if (this.curPopIndex == this.size) {
