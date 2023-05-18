@@ -97,4 +97,3 @@ export interface Coord {
   export interface ScoreFunction {
     (node:GridNode): number;
   }
-  

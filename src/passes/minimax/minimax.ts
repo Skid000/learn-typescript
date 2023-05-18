@@ -37,10 +37,10 @@ export class MiniMax {
     alpha = deepCloneObject(alpha);
     beta = deepCloneObject(beta);
     const player = state.player,
-      isPlayerTailSafe = didEat ? false : player.length > 3,
-      isEnemyTailSafe = player.length > 3,
-      playerMoves = this.neighbours(Vector.from(player.head), state.grid, isPlayerTailSafe),
       enemy = this.selectEnemy(state),
+      isPlayerTailSafe = didEat ? false : player.length > 3,
+      isEnemyTailSafe = enemy.length > 3,
+      playerMoves = this.neighbours(Vector.from(player.head), state.grid, isPlayerTailSafe),
       enemyMoves = this.neighbours(Vector.from(enemy.head), state.grid, isEnemyTailSafe),
       moves: Vector[] = maxPlayer ? playerMoves : enemyMoves;
     if (depth == this.MAX_DEPTH || !moves.length || !player.health || !enemy.health || deepObjEquals(player.head, enemy.head)) {
@@ -156,15 +156,15 @@ export class MiniMax {
     this.enemyIdx = closest;
   }
   private score(state: State, playerMoves: Vector[], enemyMoves: Vector[], previousState: State): number {
+    const a = 2, b = .1, c = 10, d = 2, e = 10;
     let score = 0, newBoard = deepCopyArray(state.grid), enemyBoard = deepCopyArray(state.grid), foodWeight = 0, enemy = this.selectEnemy(state), playerLength = state.player.length, enemyLength = enemy.length;
     // get sum of food locations weights then average it
-    let graph = new Graph(populateWrapped(state, this.canWrap), { diagonal: false, wrap: this.canWrap }), start = graph.grid[state.player.head.x][state.player.head.y];
     for (let i = 0; i < state.board.food.length; i++) {
-      let food = state.board.food[i];
-      let end = graph.grid[food.x][food.y], dist = Astar.search(graph, start, end).length + 1;
-      foodWeight += 2500 / ((dist * (state.player.health + 1)) ** ((state.player.length + 1) / Math.sqrt(311)));
+      let food = state.board.food[i], dist = Vector.from(state.player.head).distanceTo(Vector.from(food)) + 1;
+      foodWeight += 2500 / ((dist * (state.player.health)) ** ((state.player.length) / Math.sqrt(311)));
+      console.log(dist);
     }
-    foodWeight /= state.board.food.length * 2;
+    foodWeight /= state.board.food.length * a;
     // score head on collison
     let headOnScore = 0;
     if (deepObjEquals(state.player.head, enemy.head)) {
@@ -174,11 +174,16 @@ export class MiniMax {
     }
     // score area control
     let areaScore = 0, playerAreaControlled = this.floodFill(Vector.from(state.player.head), newBoard, 0, true), enemyControlled = this.floodFill(Vector.from(enemy.head), enemyBoard, 0, true);
-    areaScore = ((playerAreaControlled * playerLength) - (enemyControlled * enemyLength)) / 10
+    areaScore = ((playerAreaControlled * playerLength) - (enemyControlled * enemyLength)) / 10;
+    // score our distance from our enemy
+    let argoScore = 0, distToEnemy = Vector.from(state.player.head).distanceTo(Vector.from(enemy.head));
+    argoScore = ((1000 * playerLength * Math.sqrt(1 - (enemyLength / playerLength))) / (distToEnemy * enemyLength)) - distToEnemy;
     // add everything into score
-    score += areaScore * 10; //make area bigger
-    score += foodWeight;
-    score += headOnScore * 10; // make head on bigger
+    //!isNaN(argoScore) && (score += argoScore * b);
+    score += areaScore * c; //make area bigger
+    score += foodWeight * d;
+    score += headOnScore * e; // make head on bigger
+    console.log(`ArgS: ${argoScore}\nAreaS: ${areaScore}\nFoodW: ${foodWeight}\nHoS: ${headOnScore}\n`);
     // implement conditions
     if (isNaN(headOnScore)) score = -Infinity; // enemy bigger then us OR they have more moves then us in a headon
     if (state.player.health <= 0 || playerMoves.length == 0) score = -Infinity; // we died in this state
