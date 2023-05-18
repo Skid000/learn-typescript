@@ -62,7 +62,7 @@ export class Population {
         let pool: Member[] = [];
         for(let i = 0; i < this.popMembers.length; i++){
             let e = this.popMembers[i];
-            if(i > Math.floor(this.popMembers.length * 0.7)) continue;
+            if(i > Math.floor(this.popMembers.length * 0.3)) break;
             let f = Math.floor(e.fitness * 100);
             while (f--) {
                 pool.push(e);
