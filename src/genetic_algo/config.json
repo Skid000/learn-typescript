@@ -3,6 +3,6 @@
     "generations": 100,
     "turns": 800,
     "length": 50,
-    "mutationRate": 0.05,
+    "mutationRate": 0.001,
     "elitism": 5
 }
