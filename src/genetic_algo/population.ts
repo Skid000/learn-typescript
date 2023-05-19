@@ -1,4 +1,4 @@
-import { writeFileSync } from "fs";
+import { PathLike, readFileSync, writeFileSync } from "fs";
 import { MemberParams } from "./types";
 import { GameState } from "../types";
 function random(): number {
@@ -23,13 +23,19 @@ export class Population {
         this.popMembers = [];
         for (let i = 0; i < this.size; i++) this.popMembers.push(new Member());
     }
-    score(member: Member | undefined, turns: number, length: number,gameState: GameState) {
-        if(member == undefined) return;
+    importGen(path: PathLike) {
+        let gen: Member[] = JSON.parse(readFileSync(path, 'utf-8'));
+        for (let i = 0; i < this.size; i++) {
+            this.popMembers[i].param = gen[i].param;
+        }
+    }
+    score(member: Member | undefined, turns: number, length: number, gameState: GameState) {
+        if (member == undefined) return;
         member.fitness = (turns * length) / (this.turns * this.len);
-        switch(!0){
-            case gameState.board.snakes[0].health == 0:
-                member.fitness++;
-                break;
+        try {
+            if (gameState.board.snakes[0].id == gameState.you.id) member.fitness++;
+        } catch (err) {
+            console.log(err);
         }
     }
     getNextMember(): Member {
@@ -37,8 +43,11 @@ export class Population {
             this.curPopIndex = 0;
             this.generation++;
             this.popMembers.sort((a, b) => b.fitness - a.fitness);
+            let t = 0;
+            this.popMembers.forEach(e => t += e.fitness);
+            t /= this.popMembers.length;
             writeFileSync(`./gen_${this.generation - 1}.json`, JSON.stringify(this.popMembers), 'utf-8');
-            console.log(`Started new generation: ${this.generation}\n Best score from previous generation: ${this.popMembers[0].fitness}`);
+            console.log(`Started new generation: ${this.generation}\nBest score from previous generation: ${this.popMembers[0].fitness}\nAverage Score from previous generation: ${t}\nLowest Score from previous generation: ${this.popMembers.at(-1)?.fitness}`);
             this.mate();
         }
         let mem = this.popMembers[this.curPopIndex];
@@ -60,9 +69,9 @@ export class Population {
     }
     private matingPool() {
         let pool: Member[] = [];
-        for(let i = 0; i < this.popMembers.length; i++){
+        for (let i = 0; i < this.popMembers.length; i++) {
             let e = this.popMembers[i];
-            if(i > Math.floor(this.popMembers.length * 0.3)) break;
+            if (i > Math.floor(this.popMembers.length * 0.3)) break;
             let f = Math.floor(e.fitness * 100);
             while (f--) {
                 pool.push(e);

@@ -171,7 +171,7 @@ export class MiniMax {
     if (deepObjEquals(state.player.head, enemy.head)) {
       let enemyMovesLast = this.neighbours(Vector.from(this.selectEnemy(previousState).head), previousState.grid, true).length,
         playerMovesLast = this.neighbours(Vector.from(previousState.player.head), previousState.grid, true).length;
-      headOnScore = 100 * Math.pow(Math.sqrt(1 - (enemyMovesLast / playerMovesLast)) * Math.sqrt(1 - ((enemyLength + 1) / playerLength)), 3)
+      headOnScore = 100 * Math.pow(Math.sqrt(1 - (enemyMovesLast / playerMovesLast)) * Math.sqrt(1 - (enemyLength / playerLength)), 3)
     }
     // score area control
     let areaScore = 0, playerAreaControlled = this.floodFill(Vector.from(state.player.head), newBoard, 0, true), enemyControlled = this.floodFill(Vector.from(enemy.head), enemyBoard, 0, true);
