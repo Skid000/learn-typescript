@@ -25,6 +25,7 @@ export class Population {
     }
     importGen(path: PathLike) {
         let gen: Member[] = JSON.parse(readFileSync(path, 'utf-8'));
+        if(/gen_[0-9]+\.json/.test(path.toString())) this.generation = parseInt(path.toString().replace(/\.\/gen_|\.json/g,"")) + 1;
         for (let i = 0; i < this.size; i++) {
             this.popMembers[i].param = gen[i].param;
         }
