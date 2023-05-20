@@ -2,7 +2,8 @@ import { Population } from './genetic_algo/population';
 import { Shared } from './persistence/shared';
 import { GameState } from './types';
 export function end(gameState: GameState, sharedMap: Map<string, Shared>,pop: Population): void {
-    pop.score(sharedMap.get(gameState.game.id)?.member,gameState.turn,gameState.you.length,gameState);
-    console.log(`Game ended at ${gameState.turn}!\nWith Fitness of ${sharedMap.get(gameState.game.id)?.member.fitness}\n`);
+    let mem = sharedMap.get(gameState.game.id)?.member;
+    pop.score(mem,gameState.turn,gameState.you.length,gameState);
+    console.log(`Game ended at ${gameState.turn}!\nWith Fitness of ${mem?.fitness}\nParams: ${mem == undefined || Object.keys(mem.param).map(e=>`${e}: ${mem?.param[e]}`).join('\n')}`);
     sharedMap.delete(gameState.game.id);
 }
