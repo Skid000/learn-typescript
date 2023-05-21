@@ -35,6 +35,9 @@ export class MiniMax {
     for (let i = 0; i < MAX_DEPTH; i++) this.moves.push([]);
     this.enemyIdx = 0;
   }
+  changeDepth(d: number) {
+    this.MAX_DEPTH = d;
+  }
   bestMove(state: State, depth: number, maxPlayer: boolean, alpha: MiniMaxMove, beta: MiniMaxMove, previousState: State, didEat: boolean = false): MiniMaxMove {
     //console.log(`Depth: ${depth}\nMaxingPlayer:${maxPlayer}`);
     alpha = deepCloneObject(alpha);
@@ -178,12 +181,16 @@ export class MiniMax {
     areaScore = ((playerAreaControlled * playerLength) - (enemyControlled * enemyLength)) / 10;
     // score our distance from our enemy
     let argoScore = 0, distToEnemy = Vector.from(state.player.head).distanceTo(Vector.from(enemy.head));
-    argoScore = ((1000 * playerLength * Math.sqrt(1 - (enemyLength / playerLength))) / (distToEnemy * enemyLength)) - distToEnemy;
+    argoScore = (1000 * playerLength) / (distToEnemy * enemyLength) - distToEnemy;
+    // score how far we are from the center of the board
+    let centerScore = 0, distToCenter = Vector.from(state.player.head).distanceTo(new Vector(Math.floor(state.board.width / 2), Math.floor(state.board.height / 2)));
+    centerScore = 200 - distToCenter * 10;
     // add everything into score
-    //!isNaN(argoScore) && (score += argoScore * b);
     score += areaScore * this.member.param.a; //make area bigger
     score += foodWeight * this.member.param.b;
     score += headOnScore * this.member.param.c; // make head on bigger
+    score += argoScore * this.member.param.d;
+    score += centerScore * this.member.param.e;
     // implement conditions
     if (isNaN(headOnScore)) score = -Infinity; // enemy bigger then us OR they have more moves then us in a headon
     if (state.player.health <= 0 || playerMoves.length == 0) score = -Infinity; // we died in this state

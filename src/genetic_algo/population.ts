@@ -2,7 +2,7 @@ import { PathLike, readFileSync, writeFileSync } from "fs";
 import { MemberParams } from "./types";
 import { GameState } from "../types";
 function random(): number {
-    return Math.random() * 2 - 1;
+    return Math.random() - 0.5;
 } function random2(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -25,7 +25,7 @@ export class Population {
     }
     importGen(path: PathLike) {
         let gen: Member[] = JSON.parse(readFileSync(path, 'utf-8'));
-        if(/gen_[0-9]+\.json/.test(path.toString())) this.generation = parseInt(path.toString().replace(/\.\/gen_|\.json/g,"")) + 1;
+        if (/gen_[0-9]+\.json/.test(path.toString())) this.generation = parseInt(path.toString().replace(/\.\/gen_|\.json/g, "")) + 1;
         for (let i = 0; i < this.size; i++) {
             this.popMembers[i].param = gen[i].param;
         }
@@ -72,7 +72,7 @@ export class Population {
         let pool: Member[] = [];
         for (let i = 0; i < this.popMembers.length; i++) {
             let e = this.popMembers[i];
-            if (i > Math.floor(this.popMembers.length * 0.1)) break;
+            if (i > Math.floor(this.popMembers.length * 0.25)) break;
             let f = Math.floor(e.fitness * 100);
             while (f--) {
                 pool.push(e);
@@ -90,21 +90,31 @@ export class Member {
             a: random(),
             b: random(),
             c: random(),
-            d: random()
+            d: random(),
+            e: random()
         }
+        this.normalize();
+    }
+    normalize() {
+        let g = 0;
+        for (let i in this.param) g += this.param[i] ** 2
+        let n = Math.sqrt(g);
+        for (let i in this.param) this.param[i] /= n;
     }
     mutate(rate: number): void {
         for (let i in this.param) {
-            if (Math.random() > rate) continue;
-            this.param[i] = random();
+            if (Math.random() < rate){
+                this.param[i] += Math.random() * 0.4 - 0.2;
+                break;
+            };
         }
     }
     repro(partner: Member): Member {
-        let child = new Member(),
-            mid = random2(0, 4), i = 0;
+        let child = new Member();
         for (let t in child.param) {
-            child.param[t] = (this.param[t] + partner.param[t]) / 2
+            child.param[t] = (this.fitness * this.param[t]) + (partner.fitness * partner.param[t])
         }
+        child.normalize();
         return child;
     }
 };
