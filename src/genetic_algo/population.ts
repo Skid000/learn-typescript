@@ -36,7 +36,7 @@ export class Population {
         try {
             if (gameState.board.snakes[0].id == gameState.you.id) member.fitness++;
         } catch (err) {
-            console.log(err);
+            member.fitness++;
         }
     }
     getNextMember(): Member {
