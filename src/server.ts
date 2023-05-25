@@ -8,7 +8,7 @@ import { move } from "./move";
 import { end } from "./end";
 const persistent = new Map<string, Shared>(),
   population = new Population(config.size, config.generations, config.turns, config.length, config.mutationRate, config.elitism);
-  population.importGen('./gen_123.json');
+  population.importGen('./gen_491.json');
 export interface BattlesnakeHandlers {
   info: typeof info;
   start: typeof start;

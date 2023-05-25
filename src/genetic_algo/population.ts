@@ -60,21 +60,22 @@ export class Population {
         let newChild = [];
         for(let i = 0; i < config.newChildren; i++) newChild.push(this.tournamentSelectChild());
         this.popMembers.splice(-newChild.length);
-        for(let p of newChild) p != undefined && this.popMembers.push(p);
+        //@ts-ignore
+        this.popMembers.push(...newChild);
     }
     private tournamentSelectChild() {
         let a = null, b = null, indices = [];
         for(let i = 0; i < this.popMembers.length;i++) indices.push(i);
         for(let t = 0; t < config.ways;t++){
-            let s = indices.slice(random2(0,indices.length),1)[0];
-            if(a === null || s < a){
+            let s = indices.splice(random2(0,indices.length),1)[0];
+            if(a == null || s < a){
                 b = a;
                 a = s;
-            }else if (b === null || s < b){
+            }else if (b == null || s < b){
                 b = s;
             }
         }
-        if(a == null || b == null) return;
+        if(a == null || b == null) throw `${a},${b}`;
         let child = this.popMembers[a].repro(this.popMembers[b]);
         child.mutate(this.mutationRate);
         return child;
