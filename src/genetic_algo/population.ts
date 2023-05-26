@@ -19,8 +19,9 @@ export class Population {
     private popMembers: Member[];
     private curPopIndex: number;
     private generation: number;
+    private gamesPlayed: number;
     constructor(size: number, generations: number, turns: number, len: number, mutationRate: number, elitism: number) {
-        this.size = size, this.generations = generations, this.turns = turns, this.len = len, this.mutationRate = mutationRate, this.elitism = elitism, this.curPopIndex = this.generation = 0;
+        this.size = size, this.generations = generations, this.turns = turns, this.len = len, this.mutationRate = mutationRate, this.elitism = elitism, this.curPopIndex = this.generation = this.gamesPlayed = 0;
         this.popMembers = [];
         for (let i = 0; i < this.size; i++) this.popMembers.push(new Member());
     }
@@ -33,7 +34,7 @@ export class Population {
     }
     score(member: Member | undefined, turns: number, length: number, gameState: GameState) {
         if (member == undefined) return;
-        member.fitness = (turns * length) / (this.turns * this.len);
+        member.fitness += (turns * length) / (this.turns * this.len);
         try {
             if (gameState.board.snakes[0].id == gameState.you.id) member.fitness++;
         } catch (err) {
@@ -41,6 +42,11 @@ export class Population {
         }
     }
     getNextMember(): Member {
+        if(this.gamesPlayed > config.averageGames){
+            this.gamesPlayed = 0;
+            this.popMembers[this.curPopIndex].fitness /= config.averageGames;
+            this.curPopIndex++;
+        }
         if (this.curPopIndex == this.popMembers.length) {
             this.curPopIndex = 0;
             this.generation++;
@@ -48,12 +54,12 @@ export class Population {
             let t = 0;
             this.popMembers.forEach(e => t += e.fitness);
             t /= this.popMembers.length;
-            writeFileSync(`./gen_${this.generation - 1}.json`, JSON.stringify(this.popMembers), 'utf-8');
+            writeFileSync(`./gen2_${this.generation - 1}.json`, JSON.stringify(this.popMembers), 'utf-8');
             console.log(`Started new generation: ${this.generation}\nBest score from previous generation: ${this.popMembers[0].fitness}\nAverage Score from previous generation: ${t}\nLowest Score from previous generation: ${this.popMembers.at(-1)?.fitness}`);
             this.mate();
         }
         let mem = this.popMembers[this.curPopIndex];
-        this.curPopIndex++;
+        this.gamesPlayed++;
         return mem;
     }
     private mate() {
@@ -62,6 +68,7 @@ export class Population {
         this.popMembers.splice(-newChild.length);
         //@ts-ignore
         this.popMembers.push(...newChild);
+        this.popMembers.forEach(e=>e.fitness = 0);
     }
     private tournamentSelectChild() {
         let a = null, b = null, indices = [];
