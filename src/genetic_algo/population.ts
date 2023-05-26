@@ -42,7 +42,7 @@ export class Population {
         }
     }
     getNextMember(): Member {
-        if(this.gamesPlayed > config.averageGames){
+        if(this.gamesPlayed == config.averageGames){
             this.gamesPlayed = 0;
             this.popMembers[this.curPopIndex].fitness /= config.averageGames;
             this.curPopIndex++;
