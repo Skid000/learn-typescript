@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <canvas id="t" width="1000" height="1000"></canvas>
+    <script>
+        let ctx = document.getElementById('t');
+        (async () => {
+            let data = await fetch('./compiledData3.json');
+            data = await data.json();
+            new Chart(ctx, {
+                type: 'scatter',
+                data: data,
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom'
+                        }
+                    }
+                }
+            })
+        })();
+    </script>
+</body>
+
+</html>

@@ -20,10 +20,19 @@ export class Population {
     private curPopIndex: number;
     private generation: number;
     private gamesPlayed: number;
+    private importedParamUse: boolean;
+    private importedMember: Member;
     constructor(size: number, generations: number, turns: number, len: number, mutationRate: number, elitism: number) {
         this.size = size, this.generations = generations, this.turns = turns, this.len = len, this.mutationRate = mutationRate, this.elitism = elitism, this.curPopIndex = this.generation = this.gamesPlayed = 0;
         this.popMembers = [];
+        this.importedParamUse = false;
+        this.importedMember = new Member();
         for (let i = 0; i < this.size; i++) this.popMembers.push(new Member());
+    }
+    importAndUseParam(path: PathLike) {
+        let gen: Member[] = JSON.parse(readFileSync(path, 'utf-8'));
+        this.importedParamUse = true;
+        this.importedMember = gen[0];
     }
     importGen(path: PathLike) {
         let gen: Member[] = JSON.parse(readFileSync(path, 'utf-8'));
@@ -42,7 +51,10 @@ export class Population {
         }
     }
     getNextMember(): Member {
-        if(this.gamesPlayed == config.averageGames){
+        if (this.importedParamUse) {
+            return this.importedMember;
+        }
+        if (this.gamesPlayed == config.averageGames) {
             this.gamesPlayed = 0;
             this.popMembers[this.curPopIndex].fitness /= config.averageGames;
             this.curPopIndex++;
@@ -64,25 +76,25 @@ export class Population {
     }
     private mate() {
         let newChild = [];
-        for(let i = 0; i < config.newChildren; i++) newChild.push(this.tournamentSelectChild());
+        for (let i = 0; i < config.newChildren; i++) newChild.push(this.tournamentSelectChild());
         this.popMembers.splice(-newChild.length);
         //@ts-ignore
         this.popMembers.push(...newChild);
-        this.popMembers.forEach(e=>e.fitness = 0);
+        this.popMembers.forEach(e => e.fitness = 0);
     }
     private tournamentSelectChild() {
         let a = null, b = null, indices = [];
-        for(let i = 0; i < this.popMembers.length;i++) indices.push(i);
-        for(let t = 0; t < config.ways;t++){
-            let s = indices.splice(random2(0,indices.length),1)[0];
-            if(a == null || s < a){
+        for (let i = 0; i < this.popMembers.length; i++) indices.push(i);
+        for (let t = 0; t < config.ways; t++) {
+            let s = indices.splice(random2(0, indices.length), 1)[0];
+            if (a == null || s < a) {
                 b = a;
                 a = s;
-            }else if (b == null || s < b){
+            } else if (b == null || s < b) {
                 b = s;
             }
         }
-        if(a == null || b == null) throw `${a},${b}`;
+        if (a == null || b == null) throw `${a},${b}`;
         let child = this.popMembers[a].repro(this.popMembers[b]);
         child.mutate(this.mutationRate);
         return child;
