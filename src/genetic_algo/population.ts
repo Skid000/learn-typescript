@@ -32,7 +32,7 @@ export class Population {
     importAndUseParam(path: PathLike) {
         let gen: Member[] = JSON.parse(readFileSync(path, 'utf-8'));
         this.importedParamUse = true;
-        this.importedMember = gen[0];
+        this.importedMember.param = gen[0].param;
     }
     importGen(path: PathLike) {
         let gen: Member[] = JSON.parse(readFileSync(path, 'utf-8'));
