@@ -48,5 +48,5 @@ const dataset = {
             data: dataPoints[3]
         }
     ];
-    await fs.writeFile('compiledData5.json', JSON.stringify(dataset));
+    await fs.writeFile('compiledData6.json', JSON.stringify(dataset));
 })();
